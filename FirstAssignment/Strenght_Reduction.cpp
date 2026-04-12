@@ -1,47 +1,131 @@
-#include "llvm/IR/LegacyPassManager.h"
-#include "llvm/Passes/PassBuilder.h"
-#include "llvm/Passes/PassPlugin.h"
-#include "llvm/Support/raw_ostream.h"
+#include "llvm/IR/PassManager.h"
+#include "llvm/IR/Function.h"
+#include "llvm/IR/Instructions.h"
+#include "llvm/IR/Constants.h"
+#include "llvm/IR/IRBuilder.h"
 
 using namespace llvm;
 
-//-----------------------------------------------------------------------------
-// TestPass implementation
-//-----------------------------------------------------------------------------
-// No need to expose the internals of the pass to the outside world - keep
-// everything in an anonymous namespace.
 namespace {
 
+class StrengthReductionPass : public PassInfoMixin<StrengthReductionPass> {
+public:
+    PreservedAnalyses run(Function &F, FunctionAnalysisManager &) {
+        bool Changed = false;
 
-// New PM implementation
-struct FirstAssignment: PassInfoMixin<FirstAssignment> {
-  // Main entry point, takes IR unit to run the pass on (&F) and the
-  // corresponding pass manager (to be queried if need be)
-  
-  
-  PreservedAnalyses run(Function &F, FunctionAnalysisManager &) {
+        for (BasicBlock &BB : F) {
+            // Iterazione classica sicura: incrementiamo l'iteratore PRIMA di operare sull'istruzione,
+            // così se la cancelliamo non facciamo crashare il ciclo.
+            for (auto It = BB.begin(); It != BB.end(); ) {
+                Instruction *I = &*It++; 
+                
+                // Proviamo a convertire l'istruzione in una generica operazione binaria (+, -, *, /)
+                BinaryOperator *BinOp = dyn_cast<BinaryOperator>(I);
+                if (!BinOp) continue; // Se non lo è, passiamo alla prossima
 
-    for (auto Iter = F.begin(); Iter != F.end(); ++Iter) {
-      BasicBlock &B = *Iter;
-      std::vector<Instruction*> InstrsToRemove;
-      //prendo tutte le istruzioni del BB una alla volta
-      for (Instruction &inst : B) {
-        if (inst.getOpcode() == Instruction::Add) {
-            Value *op1 = inst.getOperand(0);
-            Value *op2 = inst.getOperand(1);
-           
+                // ***************************** 
+                //  MOLTIPLICAZIONE in caso di costante
+                // *****************************
+                if (BinOp->getOpcode() == Instruction::Mul) {
+                    Value *Op0 = BinOp->getOperand(0);
+                    Value *Op1 = BinOp->getOperand(1);
+
+                    Value *X = nullptr;
+                    ConstantInt *CI = nullptr;
+
+                    // Controllo se la costante è a destra o a sinistra
+                    if (ConstantInt *C = dyn_cast<ConstantInt>(Op1)) {
+                        CI = C;
+                        X = Op0;
+                    } else if (ConstantInt *C = dyn_cast<ConstantInt>(Op0)) {
+                        CI = C;
+                        X = Op1;
+                    }
+
+                    // Se abbiamo trovato una costante da almeno uno dei due lati
+                    if (CI) {
+                        APInt Val = CI->getValue();
+                        IRBuilder<> Builder(BinOp);
+
+                        // Caso 1: potenza di 2 perfetta → shift (es: x * 8 -> x << 3)
+                        if (Val.isPowerOf2()) {
+                            unsigned Shift = Val.logBase2();
+                            Value *Shl = Builder.CreateShl(X, Shift);
+                            BinOp->replaceAllUsesWith(Shl);
+                            BinOp->eraseFromParent();
+                            Changed = true;
+                            continue;
+                        }
+
+                        // Caso 2: 2^n - 1 → (x << n) - x  (es: 15 = 16 - 1) 
+                        //caso in cui la costante è una potenza di 2 meno 1, possiamo riscrivere l'operazione come uno shift seguito da una sottrazione
+                        APInt PlusOne = Val + 1;
+                        if (PlusOne.isPowerOf2()) {
+                            unsigned Shift = PlusOne.logBase2();
+                            Value *Shl = Builder.CreateShl(X, Shift);
+                            Value *Sub = Builder.CreateSub(Shl, X);
+                            BinOp->replaceAllUsesWith(Sub);
+                            BinOp->eraseFromParent();
+                            Changed = true;
+                            continue;
+                        }
+
+                        // Caso 3: 2^n + 1 → (x << n) + x  (es: 9 = 8 + 1)
+                        //caso in cui la costante è una potenza di 2 più 1, possiamo riscrivere l'operazione come uno shift seguito da un'addizione
+                        APInt MinusOne = Val - 1;
+                        if (MinusOne.isPowerOf2()) {
+                            unsigned Shift = MinusOne.logBase2();
+                            Value *Shl = Builder.CreateShl(X, Shift);
+                            Value *Add = Builder.CreateAdd(Shl, X);
+                            BinOp->replaceAllUsesWith(Add);
+                            BinOp->eraseFromParent();
+                            Changed = true;
+                            continue;
+                        }
+                    }
+                }
+
+                // ======================
+                // DIVISIONE
+                // ======================
+                // UDIV sta per unsigned division, SDIV per signed division. 
+                //In entrambi i casi, se il divisore è una potenza di 2, possiamo sostituire la divisione con uno shift.
+                if (BinOp->getOpcode() == Instruction::UDiv || BinOp->getOpcode() == Instruction::SDiv) {
+                    
+                    Value *X = BinOp->getOperand(0); // Il dividendo
+                    Value *Y = BinOp->getOperand(1); // Il divisore
+
+                    // Nella divisione l'ordine è fisso, la costante DEVE essere il divisore (Y)
+                    if (ConstantInt *CI = dyn_cast<ConstantInt>(Y)) {
+                        APInt Val = CI->getValue();
+
+                        if (Val.isPowerOf2()) {
+                            unsigned Shift = Val.logBase2();
+                            IRBuilder<> Builder(BinOp);
+                            Value *Shifted;
+
+                            if (BinOp->getOpcode() == Instruction::UDiv) {
+                                // unsigned → logical shift
+                                Shifted = Builder.CreateLShr(X, Shift);
+                            } else {
+                                // signed → arithmetic shift
+                                Shifted = Builder.CreateAShr(X, Shift);
+                            }
+
+                            BinOp->replaceAllUsesWith(Shifted);
+                            BinOp->eraseFromParent();
+                            Changed = true;
+                            continue;
+                        }
+                    }
+                }
+            }
+        }
+
+        return Changed ? PreservedAnalyses::none() : PreservedAnalyses::all();
     }
-
-    return PreservedAnalyses::all();
-  }
-  
-  // Without isRequired returning true, this pass will be skipped for functions
-  // decorated with the optnone LLVM attribute. Note that clang -O0 decorates
-  // all functions with optnone.
-  static bool isRequired() { return true; }
-
 };
-}
+
 } // namespace
 
 //-----------------------------------------------------------------------------
