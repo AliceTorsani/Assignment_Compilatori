@@ -14,73 +14,91 @@ namespace {
 
 
 // New PM implementation
-struct FirstAssignment: PassInfoMixin<FirstAssignment> {
+struct AlgebraicIdentity: PassInfoMixin<AlgebraicIdentity> {
   // Main entry point, takes IR unit to run the pass on (&F) and the
   // corresponding pass manager (to be queried if need be)
   
-  
-  PreservedAnalyses run(Function &F, FunctionAnalysisManager &) {
+PreservedAnalyses run(Function &F, FunctionAnalysisManager &) {
+    bool Changed = false; //Utile per tenere traccia se abbiamo fatto modifiche
+    for (auto Iter = F.begin(); Iter != F.end(); ++Iter) { //Iter è un iteratore sui BasicBlock della funzione
+        BasicBlock &B = *Iter;
+        std::vector<Instruction*> InstrsToRemove;
+        
+        for (Instruction &inst : B) { //vado a analizzare ogni istruzione del blocco base
+            
+            // =========================
+            // ADDIZIONE
+            // =========================
+            if (inst.getOpcode() == Instruction::Add) {
+                Value *op1 = inst.getOperand(0);
+                Value *op2 = inst.getOperand(1);
 
-    for (auto Iter = F.begin(); Iter != F.end(); ++Iter) {
-      BasicBlock &B = *Iter;
-      std::vector<Instruction*> InstrsToRemove;
-      //prendo tutte le istruzioni del BB una alla volta
-      for (Instruction &inst : B) {
-        if (inst.getOpcode() == Instruction::Add) {
-            Value *op1 = inst.getOperand(0);
-            Value *op2 = inst.getOperand(1);
-            if (op1==0 && op2!=0){
-              //Sostituisco tutti gli usi dell
-              inst.replaceAllUsesWith(op2);
-              //Rimuovo l'istruzione add
-              InstrsToRemove.push_back(&inst);
-            } else if (op1 !=0 && op2==0){
-              //bisogna sostituire l'istruzione con un'istruzione di assegnamento del primo operando al risultato dell'add
-              inst.replaceAllUsesWith(op1);
-              InstrsToRemove.push_back(&inst);
-            }
-        } else if (inst.getOpcode()==Instruction::Mul){
-            Value *op1 = inst.getOperand(0);
-            Value *op2 = inst.getOperand(1);
-            if (op1==1 && op2!=1){
-              //Sostituisco tutti gli usi dell'istruzione di moltiplicazione con il secondo operando
-              inst.replaceAllUsesWith(op2);
-              //Rimuovo l'istruzione di moltiplicazione
-              InstrsToRemove.push_back(&inst);
-            } else if (op1!=1 && op2==1){
-              //Sostituisco tutti gli usi dell'istruzione di moltiplicazione con il primo operando
-              inst.replaceAllUsesWith(op1);
-              //Rimuovo l'istruzione di moltiplicazione
-              InstrsToRemove.push_back(&inst);
+                // Proviamo a vedere se op1 o op2 sono costanti intere
+                ConstantInt *C1 = dyn_cast<ConstantInt>(op1);
+                ConstantInt *C2 = dyn_cast<ConstantInt>(op2);
+
+                // Se C1 esiste ed è uguale a 0 (0 + X)
+                if (C1 && C1->isZero()) {
+                    inst.replaceAllUsesWith(op2);
+                    InstrsToRemove.push_back(&inst);
+                    Changed = true;
+                } 
+                // Altrimenti se C2 esiste ed è uguale a 0 (X + 0)
+                else if (C2 && C2->isZero()) {
+                    inst.replaceAllUsesWith(op1);
+                    InstrsToRemove.push_back(&inst);
+                    Changed = true;
+                }
+            } 
+            // =========================
+            // MOLTIPLICAZIONE
+            // =========================
+            else if (inst.getOpcode() == Instruction::Mul) {
+                Value *op1 = inst.getOperand(0);
+                Value *op2 = inst.getOperand(1);
+
+                ConstantInt *C1 = dyn_cast<ConstantInt>(op1);
+                ConstantInt *C2 = dyn_cast<ConstantInt>(op2);
+
+                // Se C1 esiste ed è uguale a 1 (1 * X)
+                if (C1 && C1->isOne()) {
+                    inst.replaceAllUsesWith(op2);
+                    InstrsToRemove.push_back(&inst);
+                    Changed = true;
+                } 
+                // Altrimenti se C2 esiste ed è uguale a 1 (X * 1)
+                else if (C2 && C2->isOne()) {
+                    inst.replaceAllUsesWith(op1);
+                    InstrsToRemove.push_back(&inst);
+                    Changed = true;
+                }
             }
         }
-      }
-      //Rimuovo tutte le istruzioni morte
-      for (Instruction *inst : InstrsToRemove) {
-        inst->eraseFromParent();
-      }
+        
+        // Rimuovo tutte le istruzioni morte alla fine del blocco base
+        for (Instruction *inst : InstrsToRemove) {
+            inst->eraseFromParent();
+        }
     }
 
+    // Se abbiamo cambiato qualcosa, le analisi precedenti non sono più valide
+    if (Changed) {
+        return PreservedAnalyses::none();
+    }
     return PreservedAnalyses::all();
-  }
-  
-  // Without isRequired returning true, this pass will be skipped for functions
-  // decorated with the optnone LLVM attribute. Note that clang -O0 decorates
-  // all functions with optnone.
-  static bool isRequired() { return true; }
+}
 };
-} // namespace
-
+}
 //-----------------------------------------------------------------------------
 // New PM Registration
 //-----------------------------------------------------------------------------
-llvm::PassPluginLibraryInfo getFirstAssignmentPluginInfo() {
-  return {LLVM_PLUGIN_API_VERSION, "FirstAssignment", LLVM_VERSION_STRING,
+llvm::PassPluginLibraryInfo getAlgebraicIdentityPluginInfo() {
+  return {LLVM_PLUGIN_API_VERSION, "AlgebraicIdentity", LLVM_VERSION_STRING,
           [](PassBuilder &PB) {
             PB.registerPipelineParsingCallback( [](StringRef Name, FunctionPassManager &FPM,ArrayRef<PassBuilder::PipelineElement>)  //Using these callbacks, callers can parse both a single pass name, as well as entire sub-pipelines, and populate the PassManager instance accordingly. 
               {
-                if (Name == "first-assignment") {
-                  FPM.addPass(FirstAssignment());
+                if (Name == "algebraic-identity") {
+                  FPM.addPass(AlgebraicIdentity());
                   return true;
                 }
                 return false;
@@ -94,7 +112,7 @@ llvm::PassPluginLibraryInfo getFirstAssignmentPluginInfo() {
 // command line, i.e. via '-passes=test-pass'
 extern "C" LLVM_ATTRIBUTE_WEAK ::llvm::PassPluginLibraryInfo
 llvmGetPassPluginInfo() {
-  return getFirstAssignmentPluginInfo();
+  return getAlgebraicIdentityPluginInfo();
 }
 
   
