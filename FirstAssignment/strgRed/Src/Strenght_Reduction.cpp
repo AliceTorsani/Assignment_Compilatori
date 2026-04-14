@@ -3,7 +3,8 @@
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/IRBuilder.h"
-
+#include "llvm/Passes/PassBuilder.h"
+#include "llvm/Passes/PassPlugin.h"
 using namespace llvm;
 
 namespace {
@@ -131,13 +132,13 @@ public:
 //-----------------------------------------------------------------------------
 // New PM Registration
 //-----------------------------------------------------------------------------
-llvm::PassPluginLibraryInfo getFirstAssignmentPluginInfo() {
-  return {LLVM_PLUGIN_API_VERSION, "FirstAssignment", LLVM_VERSION_STRING,
+llvm::PassPluginLibraryInfo getStrengthReductionPluginInfo() {
+  return {LLVM_PLUGIN_API_VERSION, "StrengthReduction", LLVM_VERSION_STRING,
           [](PassBuilder &PB) {
             PB.registerPipelineParsingCallback( [](StringRef Name, FunctionPassManager &FPM,ArrayRef<PassBuilder::PipelineElement>)  //Using these callbacks, callers can parse both a single pass name, as well as entire sub-pipelines, and populate the PassManager instance accordingly. 
               {
-                if (Name == "first-assignment") {
-                  FPM.addPass(FirstAssignment());
+                if (Name == "StrengthReduction") {
+                  FPM.addPass(StrengthReductionPass());
                   return true;
                 }
                 return false;
@@ -151,8 +152,7 @@ llvm::PassPluginLibraryInfo getFirstAssignmentPluginInfo() {
 // command line, i.e. via '-passes=test-pass'
 extern "C" LLVM_ATTRIBUTE_WEAK ::llvm::PassPluginLibraryInfo
 llvmGetPassPluginInfo() {
-  return getFirstAssignmentPluginInfo();
-}
+  return getStrengthReductionPluginInfo();
 }
 
   
