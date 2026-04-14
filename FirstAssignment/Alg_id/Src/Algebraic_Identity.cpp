@@ -13,76 +13,68 @@ namespace {
 
 struct AlgebraicIdentity : PassInfoMixin<AlgebraicIdentity> {
     PreservedAnalyses run(Function &F, FunctionAnalysisManager &) {
-        bool Changed = false;
-        
         // Iteriamo sui BasicBlock della funzione
         for (BasicBlock &B : F) { 
+            // vettore che memorizza le istruzioni da cancellare
             std::vector<Instruction*> InstrsToRemove;
             
-            // Analizziamo ogni istruzione del blocco base
+            // Analizziamo ogni istruzione del basic block 
             for (Instruction &inst : B) { 
-                BinaryOperator *BinOp = dyn_cast<BinaryOperator>(&inst);
+                // controllo che l'istruzione sia un'operazione binaria cioè una +,-,* o /
+                BinaryOperator *BinOp = dyn_cast<BinaryOperator>(&inst); 
                 if (!BinOp) continue; // Se non lo è, passiamo alla prossima
-                // =========================
-                // ADDIZIONE
-                // =========================
-                if (inst.getOpcode() == Instruction::Add) {
+                    //recupero gli operandi dell'operazione
                     Value *op1 = inst.getOperand(0);
                     Value *op2 = inst.getOperand(1);
 
+                    //vado a effettuaer un cast per verificare se gli operandi sono delle costanti
                     ConstantInt *C1 = dyn_cast<ConstantInt>(op1);
                     ConstantInt *C2 = dyn_cast<ConstantInt>(op2);
 
-                    // Se C1 esiste ed è uguale a 0 (0 + X)
+                // ADDIZIONE
+                if (inst.getOpcode() == Instruction::Add) {
+                    
+                    // (0 + X)
                     if (C1 && C1->isZero()) {
+                        //Sostituisce tutti gli usi dell'istruzione con il valore diverso da 0 che è op2
                         inst.replaceAllUsesWith(op2);
                         InstrsToRemove.push_back(&inst);
-                        Changed = true;
                     } 
                     // Altrimenti se C2 esiste ed è uguale a 0 (X + 0)
                     else if (C2 && C2->isZero()) {
                         inst.replaceAllUsesWith(op1);
                         InstrsToRemove.push_back(&inst);
-                        Changed = true;
                     }
                 } 
                 // =========================
                 // MOLTIPLICAZIONE
                 // =========================
                 else if (inst.getOpcode() == Instruction::Mul) {
-                    Value *op1 = inst.getOperand(0);
-                    Value *op2 = inst.getOperand(1);
-
-                    ConstantInt *C1 = dyn_cast<ConstantInt>(op1);
-                    ConstantInt *C2 = dyn_cast<ConstantInt>(op2);
-
                     // Se C1 esiste ed è uguale a 1 (1 * X)
-                    if (C1 && C1->isOne()) {
+                    if ( C1->isOne()) {
                         inst.replaceAllUsesWith(op2);
                         InstrsToRemove.push_back(&inst);
-                        Changed = true;
                     } 
                     // Altrimenti se C2 esiste ed è uguale a 1 (X * 1)
-                    else if (C2 && C2->isOne()) {
+                    else if ( C2->isOne()) {
                         inst.replaceAllUsesWith(op1);
                         InstrsToRemove.push_back(&inst);
-                        Changed = true;
                     }
                 }
             }
             
-            // Rimuovo tutte le istruzioni morte alla fine del blocco base
+            // Rimuovo tutte le istruzioni morte 
             for (Instruction *inst : InstrsToRemove) {
                 inst->eraseFromParent();
             }
         }
 
         // Se abbiamo cambiato qualcosa, le analisi precedenti non sono più valide
-        return Changed ? PreservedAnalyses::none() : PreservedAnalyses::all();
+        return PreservedAnalyses::none() : PreservedAnalyses::all();
     }
 };
 
-} // Fine namespace anonimo
+} //  namespace 
 
 //-----------------------------------------------------------------------------
 // New PM Registration
