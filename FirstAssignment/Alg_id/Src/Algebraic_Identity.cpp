@@ -21,7 +21,7 @@ struct AlgebraicIdentity : PassInfoMixin<AlgebraicIdentity> {
             
             // Analizziamo ogni istruzione del blocco base
             for (Instruction &inst : B) { 
-                BinaryOperator *BinOp = dyn_cast<BinaryOperator>(I);
+                BinaryOperator *BinOp = dyn_cast<BinaryOperator>(inst);
                 if (!BinOp) continue; // Se non lo è, passiamo alla prossima
                 // =========================
                 // ADDIZIONE
