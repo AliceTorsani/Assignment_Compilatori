@@ -1,9 +1,0 @@
-/home/anna/Laboratori_Compilatori/GitHub/Assignment_Compilatori/FirstAssignment/strgRed/build/CMakeFiles/intrinsics_gen.dir
-/home/anna/Laboratori_Compilatori/GitHub/Assignment_Compilatori/FirstAssignment/strgRed/build/CMakeFiles/omp_gen.dir
-/home/anna/Laboratori_Compilatori/GitHub/Assignment_Compilatori/FirstAssignment/strgRed/build/CMakeFiles/acc_gen.dir
-/home/anna/Laboratori_Compilatori/GitHub/Assignment_Compilatori/FirstAssignment/strgRed/build/CMakeFiles/ARMTargetParserTableGen.dir
-/home/anna/Laboratori_Compilatori/GitHub/Assignment_Compilatori/FirstAssignment/strgRed/build/CMakeFiles/AArch64TargetParserTableGen.dir
-/home/anna/Laboratori_Compilatori/GitHub/Assignment_Compilatori/FirstAssignment/strgRed/build/CMakeFiles/RISCVTargetParserTableGen.dir
-/home/anna/Laboratori_Compilatori/GitHub/Assignment_Compilatori/FirstAssignment/strgRed/build/CMakeFiles/StrenghtReduction.dir
-/home/anna/Laboratori_Compilatori/GitHub/Assignment_Compilatori/FirstAssignment/strgRed/build/CMakeFiles/edit_cache.dir
-/home/anna/Laboratori_Compilatori/GitHub/Assignment_Compilatori/FirstAssignment/strgRed/build/CMakeFiles/rebuild_cache.dir
