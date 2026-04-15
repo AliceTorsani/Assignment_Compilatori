@@ -1,9 +1,0 @@
-/home/anna/Laboratori_Compilatori/GitHub/Assignment_Compilatori/FirstAssignment/Alg_id/build/CMakeFiles/intrinsics_gen.dir
-/home/anna/Laboratori_Compilatori/GitHub/Assignment_Compilatori/FirstAssignment/Alg_id/build/CMakeFiles/omp_gen.dir
-/home/anna/Laboratori_Compilatori/GitHub/Assignment_Compilatori/FirstAssignment/Alg_id/build/CMakeFiles/acc_gen.dir
-/home/anna/Laboratori_Compilatori/GitHub/Assignment_Compilatori/FirstAssignment/Alg_id/build/CMakeFiles/ARMTargetParserTableGen.dir
-/home/anna/Laboratori_Compilatori/GitHub/Assignment_Compilatori/FirstAssignment/Alg_id/build/CMakeFiles/AArch64TargetParserTableGen.dir
-/home/anna/Laboratori_Compilatori/GitHub/Assignment_Compilatori/FirstAssignment/Alg_id/build/CMakeFiles/RISCVTargetParserTableGen.dir
-/home/anna/Laboratori_Compilatori/GitHub/Assignment_Compilatori/FirstAssignment/Alg_id/build/CMakeFiles/Algebraic_Identity.dir
-/home/anna/Laboratori_Compilatori/GitHub/Assignment_Compilatori/FirstAssignment/Alg_id/build/CMakeFiles/edit_cache.dir
-/home/anna/Laboratori_Compilatori/GitHub/Assignment_Compilatori/FirstAssignment/Alg_id/build/CMakeFiles/rebuild_cache.dir
