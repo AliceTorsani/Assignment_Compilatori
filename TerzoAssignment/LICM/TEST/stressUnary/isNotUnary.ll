@@ -1,0 +1,195 @@
+; ModuleID = './isNotUnary.cpp'
+source_filename = "./isNotUnary.cpp"
+target datalayout = "e-m:o-i64:64-i128:128-n32:64-S128-Fn32"
+target triple = "arm64-apple-macosx16.0.0"
+
+; Function Attrs: mustprogress noinline nounwind ssp uwtable(sync)
+define noundef i32 @_Z16provaAssignementi(i32 noundef %0) #0 {
+  %2 = alloca i32, align 4
+  %3 = alloca i32, align 4
+  %4 = alloca i32, align 4
+  %5 = alloca i32, align 4
+  %6 = alloca i32, align 4
+  %7 = alloca i32, align 4
+  %8 = alloca i32, align 4
+  %9 = alloca i32, align 4
+  %10 = alloca i8, align 1
+  %11 = alloca i32, align 4
+  %12 = alloca i32, align 4
+  %13 = alloca i32, align 4
+  %14 = alloca i32, align 4
+  %15 = alloca float, align 4
+  %16 = alloca i32, align 4
+  %17 = alloca i32, align 4
+  %18 = alloca i8, align 1
+  %19 = alloca i8, align 1
+  store i32 %0, ptr %2, align 4
+  store i32 5, ptr %3, align 4
+  %20 = load i32, ptr %3, align 4
+  %21 = add nsw i32 %20, 5
+  store i32 %21, ptr %4, align 4
+  store i32 10, ptr %5, align 4
+  store i32 20, ptr %6, align 4
+  store i32 0, ptr %7, align 4
+  store i32 3, ptr %8, align 4
+  %22 = load i32, ptr %2, align 4
+  store i32 %22, ptr %9, align 4
+  store i8 1, ptr %10, align 1
+  br label %23
+
+23:                                               ; preds = %43, %1
+  %24 = load i32, ptr %9, align 4
+  %25 = icmp slt i32 %24, 100
+  br i1 %25, label %26, label %64
+
+26:                                               ; preds = %23
+  %27 = load i32, ptr %9, align 4
+  %28 = add nsw i32 %27, 1
+  store i32 %28, ptr %9, align 4
+  %29 = load i32, ptr %9, align 4
+  store i32 %29, ptr %11, align 4
+  %30 = load i8, ptr %10, align 1
+  %31 = trunc i8 %30 to i1
+  %32 = xor i1 %31, true
+  %33 = zext i1 %32 to i8
+  store i8 %33, ptr %10, align 1
+  %34 = load i32, ptr %2, align 4
+  %35 = icmp sgt i32 %34, 2
+  br i1 %35, label %36, label %43
+
+36:                                               ; preds = %26
+  %37 = load i32, ptr %2, align 4
+  store i32 %37, ptr %12, align 4
+  %38 = load i32, ptr %12, align 4
+  %39 = add nsw i32 %38, 2
+  store i32 %39, ptr %12, align 4
+  %40 = load i32, ptr %12, align 4
+  %41 = load i32, ptr %2, align 4
+  %42 = add nsw i32 %41, %40
+  store i32 %42, ptr %2, align 4
+  br label %43
+
+43:                                               ; preds = %36, %26
+  %44 = load i32, ptr %2, align 4
+  %45 = sub nsw i32 0, %44
+  store i32 %45, ptr %13, align 4
+  %46 = load i32, ptr %5, align 4
+  %47 = load i32, ptr %6, align 4
+  %48 = add nsw i32 %46, %47
+  store i32 %48, ptr %14, align 4
+  %49 = load i32, ptr %14, align 4
+  %50 = load i32, ptr %5, align 4
+  %51 = sdiv i32 %49, %50
+  %52 = sitofp i32 %51 to float
+  store float %52, ptr %15, align 4
+  %53 = load i32, ptr %5, align 4
+  %54 = load i32, ptr %11, align 4
+  %55 = add nsw i32 %53, %54
+  store i32 %55, ptr %16, align 4
+  %56 = load i32, ptr %5, align 4
+  %57 = load i32, ptr %13, align 4
+  %58 = add nsw i32 %56, %57
+  store i32 %58, ptr %17, align 4
+  %59 = load i32, ptr %14, align 4
+  %60 = load i32, ptr %16, align 4
+  %61 = add nsw i32 %59, %60
+  %62 = load i32, ptr %17, align 4
+  %63 = add nsw i32 %61, %62
+  store i32 %63, ptr %7, align 4
+  br label %23, !llvm.loop !6
+
+64:                                               ; preds = %23
+  store i8 1, ptr %18, align 1
+  %65 = load i8, ptr %18, align 1
+  %66 = trunc i8 %65 to i1
+  %67 = xor i1 %66, true
+  %68 = zext i1 %67 to i8
+  store i8 %68, ptr %19, align 1
+  %69 = load i32, ptr %3, align 4
+  %70 = load i32, ptr %9, align 4
+  %71 = add nsw i32 %69, %70
+  %72 = load i32, ptr %2, align 4
+  %73 = add nsw i32 %71, %72
+  ret i32 %73
+}
+
+; Function Attrs: mustprogress noinline nounwind ssp uwtable(sync)
+define noundef i32 @_Z7icmTesti(i32 noundef %0) #0 {
+  %2 = alloca i32, align 4
+  %3 = alloca i32, align 4
+  %4 = alloca i32, align 4
+  %5 = alloca i32, align 4
+  %6 = alloca i32, align 4
+  %7 = alloca [100 x i32], align 4
+  %8 = alloca i32, align 4
+  %9 = alloca i32, align 4
+  %10 = alloca i32, align 4
+  %11 = alloca i32, align 4
+  %12 = alloca i32, align 4
+  %13 = alloca i32, align 4
+  store i32 %0, ptr %2, align 4
+  store i32 10, ptr %3, align 4
+  store i32 20, ptr %4, align 4
+  store i32 0, ptr %5, align 4
+  store i32 3, ptr %6, align 4
+  %14 = load i32, ptr %2, align 4
+  store i32 %14, ptr %8, align 4
+  br label %15
+
+15:                                               ; preds = %38, %1
+  %16 = load i32, ptr %8, align 4
+  %17 = icmp slt i32 %16, 100
+  br i1 %17, label %18, label %41
+
+18:                                               ; preds = %15
+  %19 = load i32, ptr %3, align 4
+  %20 = load i32, ptr %4, align 4
+  %21 = add nsw i32 %19, %20
+  store i32 %21, ptr %9, align 4
+  %22 = load i32, ptr %9, align 4
+  %23 = mul nsw i32 %22, 2
+  store i32 %23, ptr %10, align 4
+  %24 = load i32, ptr %9, align 4
+  %25 = load i32, ptr %8, align 4
+  %26 = add nsw i32 %24, %25
+  store i32 %26, ptr %11, align 4
+  %27 = getelementptr inbounds [100 x i32], ptr %7, i64 0, i64 0
+  %28 = load i32, ptr %27, align 4
+  store i32 %28, ptr %12, align 4
+  %29 = load i32, ptr %9, align 4
+  %30 = load i32, ptr %10, align 4
+  %31 = add nsw i32 %29, %30
+  %32 = load i32, ptr %8, align 4
+  %33 = sext i32 %32 to i64
+  %34 = getelementptr inbounds [100 x i32], ptr %7, i64 0, i64 %33
+  store i32 %31, ptr %34, align 4
+  %35 = load i32, ptr %10, align 4
+  %36 = load i32, ptr %6, align 4
+  %37 = add nsw i32 %35, %36
+  store i32 %37, ptr %13, align 4
+  br label %38
+
+38:                                               ; preds = %18
+  %39 = load i32, ptr %8, align 4
+  %40 = add nsw i32 %39, 1
+  store i32 %40, ptr %8, align 4
+  br label %15, !llvm.loop !8
+
+41:                                               ; preds = %15
+  ret i32 0
+}
+
+attributes #0 = { mustprogress noinline nounwind ssp uwtable(sync) "frame-pointer"="non-leaf" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="apple-m1" "target-features"="+aes,+altnzcv,+ccdp,+ccidx,+complxnum,+crc,+dit,+dotprod,+flagm,+fp-armv8,+fp16fml,+fptoint,+fullfp16,+jsconv,+lse,+neon,+pauth,+perfmon,+predres,+ras,+rcpc,+rdm,+sb,+sha2,+sha3,+specrestrict,+ssbs,+v8.1a,+v8.2a,+v8.3a,+v8.4a,+v8a,+zcm,+zcz" }
+
+!llvm.module.flags = !{!0, !1, !2, !3, !4}
+!llvm.ident = !{!5}
+
+!0 = !{i32 2, !"SDK Version", [2 x i32] [i32 26, i32 0]}
+!1 = !{i32 1, !"wchar_size", i32 4}
+!2 = !{i32 8, !"PIC Level", i32 2}
+!3 = !{i32 7, !"uwtable", i32 1}
+!4 = !{i32 7, !"frame-pointer", i32 1}
+!5 = !{!"Homebrew clang version 19.1.7"}
+!6 = distinct !{!6, !7}
+!7 = !{!"llvm.loop.mustprogress"}
+!8 = distinct !{!8, !7}
