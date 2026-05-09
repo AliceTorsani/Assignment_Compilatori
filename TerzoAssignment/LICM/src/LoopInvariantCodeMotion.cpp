@@ -42,16 +42,16 @@ struct LoopInvariantCodeMotion: PassInfoMixin<LoopInvariantCodeMotion>{
   PreservedAnalyses run(Function &F, FunctionAnalysisManager &AM) {
 
     // Otteniamo l'analisi dei loop per la funzione
-    LoopInfo &LI = AM.getResult<LoopAnalysis>(F);
+        LoopInfo &LI = AM.getResult<LoopAnalysis>(F);
 
     // Otteniamo il dominator tree
     DominatorTree &DT = AM.getResult<DominatorTreeAnalysis>(F);
     
 
-    // Iteriamo su tutti i loop top-level
-    for (Loop *L : LI) {
+        // Iteriamo su tutti i loop top-level
+        for (Loop *L : LI) {
         processLoop(L, DT);
-    }
+        }
 
 
     return PreservedAnalyses::all();
@@ -66,30 +66,29 @@ struct LoopInvariantCodeMotion: PassInfoMixin<LoopInvariantCodeMotion>{
         // Vettore delle istruzioni invariant trovate
         std::vector<Instruction*> InvariantInsts;
 
-        // Set per lookup veloce (serve per iterazione a punto fisso)
-        std::unordered_set<Instruction*> InvariantSet;
+            // Scorriamo tutti i basic block del loop
+            for (BasicBlock *BB : L->blocks()) {
 
-        // Scorriamo tutti i basic block del loop
-        for (BasicBlock *BB : L->blocks()) {
+                // Scorriamo tutte le istruzioni del blocco
+                for (Instruction &I : *BB) {
 
-            // Scorriamo tutte le istruzioni del blocco
-            for (Instruction &I : *BB) {
+                    // Controlla se è loop invariant
+                    if (isLoopInvariant(I, L, InvariantInsts)) {
 
-                // Controlla se è loop invariant
-                if (isLoopInvariant(I, L, InvariantSet)) {
-
-                    // Aggiungiamo al vettore
-                    InvariantInsts.push_back(&I);
-
-                    // Segniamo nel set
-                    InvariantSet.insert(&I);
-
-                    //Segniamo nelle candidate alla CM
-                    CMCandidates.insert(&I);
+                        // Se il vettore non contiene già l'istruzione, allora la inseriamo
+                        // (evito di inserire duplicati)
+                        if (std::find(InvariantInsts.begin(),
+                                        InvariantInsts.end(),
+                                        &I) == InvariantInsts.end())
+                        {
+                            // Aggiungiamo al vettore
+                            InvariantInsts.push_back(&I);
+                        }
+                        
+                    }
                 }
             }
-        }
-    
+        
 
         // DEBUG: stampa le istruzioni trovate
         for (Instruction *I : InvariantInsts) {
@@ -141,10 +140,9 @@ struct LoopInvariantCodeMotion: PassInfoMixin<LoopInvariantCodeMotion>{
 
     // Funzione che verifica se una istruzione è loop-invariant
     bool isLoopInvariant(Instruction &I,
-                         Loop *L,
-                         std::unordered_set<Instruction*> &InvariantSet) {
-
-        // Escludiamo istruzioni con effetti collaterali
+                         Loop *L, std::vector<Instruction*> &InvariantInsts) {
+        
+        // Escludiamo istruzioni con effetti collaterali (store, chiamate a funzione, ecc.)
         if (I.mayHaveSideEffects())
             return false;
 
@@ -152,7 +150,24 @@ struct LoopInvariantCodeMotion: PassInfoMixin<LoopInvariantCodeMotion>{
         if (I.isTerminator())
             return false;
 
+        // Escludiamo istruzioni PHI
+        if (isa<PHINode>(&I))
+            return false;
+        
+        // Escludiamo le load
+        if (isa<LoadInst>(&I))
+            return false;
 
+        // Controlla che le istruzioni del tipo a=5 vengano analizzate
+        // Se l'istruzione non è binaria, allora non la analizziamo
+        // e se non è un'istruzione del tipo a=5 allora non la analizziamo
+        // Considera SOLO:
+        // - binary operations
+        // - unary instructions
+
+        if (!(isa<BinaryOperator>(&I) || isa<UnaryInstruction>(&I) || I.isCast()))
+            return false;
+        
         // Analizziamo tutti gli operandi dell'istruzione
         // prendiamo gli usi (operands)
         for (Value *Op : I.operands()) {
@@ -161,7 +176,7 @@ struct LoopInvariantCodeMotion: PassInfoMixin<LoopInvariantCodeMotion>{
             if (isa<Constant>(Op))
                 continue;
 
-            // Caso 3: valore definito da un'altra istruzione
+            // Caso 2: valore definito da un'altra istruzione
             // risaliamo alla definizione
             if (Instruction *OpInst = dyn_cast<Instruction>(Op)) {
 
@@ -170,13 +185,20 @@ struct LoopInvariantCodeMotion: PassInfoMixin<LoopInvariantCodeMotion>{
                     continue;
 
                 // Se definito nel loop ma già invariant → ok
-                if (InvariantSet.count(OpInst))
-                    continue;
-
-                // Controlla se l'istruzione che definisce l'operando è loopInvariant
-                if (isLoopInvariant(*OpInst, L, InvariantSet)) {
+                // (Cioè se il vettore contiene già l'istruzione -> ok)
+                if (std::find(InvariantInsts.begin(),
+                                InvariantInsts.end(),
+                                OpInst) != InvariantInsts.end())
+                {
                     continue;
                 }
+
+                // Se definita nel loop:
+                // verifico ricorsivamente
+                // controllo ricorsivo per controllare
+                // se l'istruzione che definsce l'operando è anch'essa loop invariant
+                if (isLoopInvariant(*OpInst, L, InvariantInsts))
+                    continue;
 
                 // Altrimenti NON invariant
                 return false;
