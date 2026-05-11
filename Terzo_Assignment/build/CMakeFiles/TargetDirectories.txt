@@ -1,0 +1,9 @@
+/home/anna/Terzo_Assignment/build/CMakeFiles/intrinsics_gen.dir
+/home/anna/Terzo_Assignment/build/CMakeFiles/omp_gen.dir
+/home/anna/Terzo_Assignment/build/CMakeFiles/acc_gen.dir
+/home/anna/Terzo_Assignment/build/CMakeFiles/ARMTargetParserTableGen.dir
+/home/anna/Terzo_Assignment/build/CMakeFiles/AArch64TargetParserTableGen.dir
+/home/anna/Terzo_Assignment/build/CMakeFiles/RISCVTargetParserTableGen.dir
+/home/anna/Terzo_Assignment/build/CMakeFiles/LoopInvariantCodeMotion.dir
+/home/anna/Terzo_Assignment/build/CMakeFiles/edit_cache.dir
+/home/anna/Terzo_Assignment/build/CMakeFiles/rebuild_cache.dir
