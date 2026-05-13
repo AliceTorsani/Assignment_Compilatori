@@ -5,22 +5,15 @@ int provaAssignement(int primaVar) {
     int b = 20;
     int c = 0;
     int d = 3;
-    int pseudo = primaVar;
+    int pseudo = 0;
 
-    while(pseudo < 100){
+    do {
         pseudo++;
 
         //TEST: ricerca di operazioni unarie
         //      aliasing, viene rilassato
         int alias = pseudo;
         
-        if(primaVar > 2) {
-            //      aliasing
-            int copia = primaVar;
-            //      operatori +=, tradotti in add
-            copia +=2;
-            primaVar += copia;
-        }
         //      negazione, tradotto in sub 0, primaVar
         int negativo = -primaVar;
         // test loopInvariant
@@ -29,6 +22,15 @@ int provaAssignement(int primaVar) {
         int y = a+alias;
         int z = a+negativo;
         c = x + y + z;
+        
+        if(primaVar > 2) {
+            //      aliasing
+            int copia = primaVar;
+            //      operatori +=, tradotti in add
+            int testComplementare = a+d;
+            copia +=2;
+            primaVar += copia;
+        }
 /*
 3:                                                ; preds = %11, %1
   %.01 = phi i32 [ %0, %1 ], [ %6, %11 ]
@@ -68,9 +70,7 @@ int provaAssignement(int primaVar) {
   ret i32 %26
 }
 */
-
-
-    }
+    } while(pseudo < 100);
     
     bool vero = true;
     bool falso = !vero;
@@ -85,10 +85,9 @@ int icmTest(int alias) {
     int b = 20;
     int c = 0;
     int d = 3;
-
     int arr[100];
 
-    for (int i=alias; i<100; i++) {
+    for (int i=0; i<100; i++) {
 
         // // Caso 1: completamente invariant (costanti + variabili fuori loop)
         int x = a + b;
@@ -98,7 +97,7 @@ int icmTest(int alias) {
 
         // // Caso 3: NON invariant (dipende da i)
         int z = x + i;
-
+        
         // // Caso 6: accesso memoria (non invariant)
         int m = arr[0];
 

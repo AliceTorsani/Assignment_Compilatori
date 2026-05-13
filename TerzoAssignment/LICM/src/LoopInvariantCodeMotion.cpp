@@ -6,12 +6,15 @@
 #include "llvm/IR/Function.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/Constants.h"
+#include "llvm/Transforms/Utils/BasicBlockUtils.h"
+#include "llvm/Transforms/Utils/LoopUtils.h"
+#include "llvm/ADT/DepthFirstIterator.h"
 
 #include "llvm/Analysis/LoopInfo.h"
 #include "llvm/IR/Dominators.h"
 
 #include <vector>
-#include <unordered_set>
+#include <algorithm>
 
 using namespace llvm;
 
@@ -21,22 +24,6 @@ namespace {
 // Invocare il passo nella cartella /test nel seguente modo: 
 // opt -S -load-pass-plugin ../build/libLoopInvariantCodeMotion.so -p loop-invariant-code-motion Test.m2r.ll -o Test.optimized.ll
 // Pass per identificare istruzioni loop-invariant (senza code motion)
-
-/*NOTE DI PROGETTO
-• Calcolare le reaching definitions
-• Trovare le istruzioni loop-invariant                                           | attraverso isLoopInvariant
-• Calcolare i dominatori (dominance tree)                                        |
-• Trovare le uscite del loop (i successori fuori dal loop)                       |
-• Le istruzioni candidate alla code motion:
-    • Sono loop invariant                                                       | attraverso isLoopInvariant
-    • Si trovano in blocchi che dominano tutte le uscite del loop               | Tramite domtree
-    • Assegnano un valore a variabili non assegnate altrove nel loop            | La forma SSA lo garantisce per costruzione
-    • Si trovano in blocchi che dominano tutti i blocchi nel loop che usano la  | La forma SSA lo garantisce per costruzione
-            variabile a cui si sta assegnando un valore
-• Eseguire una ricerca depth-first dei blocchi
-• Spostare l’istruzione candidata nel preheader se tutte le istruzioni
-invarianti da cui questa dipende sono state spostate
-*/
 struct LoopInvariantCodeMotion: PassInfoMixin<LoopInvariantCodeMotion>{
 
   PreservedAnalyses run(Function &F, FunctionAnalysisManager &AM) {
@@ -44,13 +31,13 @@ struct LoopInvariantCodeMotion: PassInfoMixin<LoopInvariantCodeMotion>{
     // Otteniamo l'analisi dei loop per la funzione
         LoopInfo &LI = AM.getResult<LoopAnalysis>(F);
 
-    // Otteniamo il dominator tree
-    DominatorTree &DT = AM.getResult<DominatorTreeAnalysis>(F);
-    
+    // Otteniamo il Dominator Tree
+        DominatorTree &DT = AM.getResult<DominatorTreeAnalysis>(F);
 
         // Iteriamo su tutti i loop top-level
         for (Loop *L : LI) {
-        processLoop(L, DT);
+            outs() << "\n\n--------inizio loop--------\n\n";
+            processLoop(L, DT, LI);
         }
 
 
@@ -59,15 +46,54 @@ struct LoopInvariantCodeMotion: PassInfoMixin<LoopInvariantCodeMotion>{
 
   private:
 
-    // Analizza un loop e identifica le istruzioni invariant
-    void processLoop(Loop *L, DominatorTree &DT) {
-        std::unordered_set<Instruction*> CMCandidates;
+    // Analizza un loop: identifica le istruzioni invariant, poi quelle candidate alla code motion,
+    //infine muove le istruzioni nel preheader
+    void processLoop(Loop *L, 
+                     DominatorTree &DT,
+                     LoopInfo &LI) {
 
+        // PREHEADER
+
+        // LICM richiede un preheader.
+        // Se non esiste, lo creiamo.
+
+        BasicBlock *Preheader = L->getLoopPreheader();
+
+        if (!Preheader) {
+
+            errs() << "Creating preheader for loop\n";
+
+            // Funzione utility di LLVM
+            // che crea automaticamente il preheader.
+
+            Preheader = InsertPreheaderForLoop(L, &DT, &LI, nullptr, false);
+
+            // Se fallisce → abbandona
+            if (!Preheader)
+                return;
+        }
+        
         // Vettore delle istruzioni invariant trovate
         std::vector<Instruction*> InvariantInsts;
 
+        // FASE 1
+        // Identificazione istruzioni loop invariant
+
             // Scorriamo tutti i basic block del loop
             for (BasicBlock *BB : L->blocks()) {
+                
+                outs() << "\nblocco del loop: ";
+                BB->printAsOperand(outs(), false);
+                outs() << "\nil quale domina: ";
+                
+                SmallVector<BasicBlock*> discendenti;
+                DT.getDescendants(BB, discendenti);
+
+                for(auto c : discendenti) {
+                    outs() << "\n\t ⊢";
+                    c->printAsOperand(outs(), false);
+                }
+            
 
                 // Scorriamo tutte le istruzioni del blocco
                 for (Instruction &I : *BB) {
@@ -88,6 +114,7 @@ struct LoopInvariantCodeMotion: PassInfoMixin<LoopInvariantCodeMotion>{
                     }
                 }
             }
+            outs() << "\n\n--------fine loop--------\n\n";
         
 
         // DEBUG: stampa le istruzioni trovate
@@ -97,45 +124,167 @@ struct LoopInvariantCodeMotion: PassInfoMixin<LoopInvariantCodeMotion>{
             errs() << "\n";
         }
 
-        // Ricorsione sui sotto-loop 
-        for (Loop *SubLoop : L->getSubLoops()) {
-            processLoop(SubLoop, DT);
-        }
+        // FASE 2
+        // Ricerca candidate alla code motion
 
+        // Otteniamo i blocchi di uscita del loop
+        SmallVector<BasicBlock*, 8> ExitBlocks;
+        L->getExitBlocks(ExitBlocks);
 
-        //Cerco i blocchi che dominano tutte le uscite del loop---
-        std::vector<BasicBlock*> commonDominators;
+        // Candidate da spostare
+        std::vector<Instruction*> HoistCandidates;
         //    1. vado a prendere ogni exit block del loop
         SmallVector<BasicBlock*> exitBlocks;
         L->getExitBlocks(exitBlocks);
-        //    2. esamino ogni nodo del Dominator Tree
-        // TODO: far partire il codice dal loop
-        for (auto *DTN : depth_first(DT.getRootNode())) {
+
+        // Analizziamo tutte le invariant
+        for (Instruction *I : InvariantInsts) {
+
+            //----------------------------------------------------
+            // CONDIZIONE 1
+            // Dominanza su tutte le uscite
+            //----------------------------------------------------
+
             
-            //controllo se ogni exitBlock è tra i figli del nodo
-            bool hasAllEB = true;
+            
+            //riempio il vettore con tutti i blocchi dominati dal BB al quale appartiene l'istruzione corrente
+            SmallVector<BasicBlock*> discendenti;
+            DT.getDescendants(I->getParent(), discendenti);
+            
+            //controllo se ogni exitBlock è tra i discendenti del nodo
+            bool dominatesExits = true;
+            //if (!DT.dominates(I->getParent(), ExitBB))
             for(auto eB : exitBlocks) {
+                outs() << "exit block esaminato: ";
+                eB->printAsOperand(errs(), false);
+                
                 bool isEbInChild = false;
-                //controllo se tra i figli del nodo corrente c'è l'exitBlock
-                for(auto c : DTN->children()) {
-                    if(c->getBlock() == eB) { isEbInChild=true; }
+                
+                //controllo se tra i discendenti del nodo corrente c'è l'exitBlock
+                for(auto dB : discendenti) {
+                    outs() << " con basic block: ";
+                    dB->printAsOperand(errs(), false);
+                    outs() << "\n\t\t\t ";
+
+
+                    if(dB == eB) { isEbInChild=true; }
                 }
-                if(!isEbInChild) { hasAllEB = false; }
+                if(!isEbInChild) { dominatesExits = false; } //TODO: break?
             }
-            if(hasAllEB) {
-                commonDominators.push_back(DTN->getBlock());
+
+            if(!dominatesExits) {
+                
+                outs() << "\nIstruzione il cui blocco NON domina tutte le uscite: ";
+                I->print(errs());
+                outs() << "\n";
+                
+            } else {
+                outs() << "\nIstruzione il cui blocco DOMINA tutte le uscite: ";
+                I->print(errs());
+                outs() << "\n";
             }
-    
-        }
-        //A fine iterazione commonDominators contiene ogni blocco che domina ogni exitBlock, quindi ogni blocco candidato a CodeMotion per punto 2
-        //Riempio il set con le candidate alla Code Motion
-        for(BasicBlock* b : commonDominators) {
-            for(Instruction &I : *b) {
-                // TODO: controllare se non complica il loop
-                CMCandidates.insert(&I);
+
+            //----------------------------------------------------
+            // CONDIZIONE 2
+            // Variabile dead fuori dal loop
+            //----------------------------------------------------
+
+            bool deadOutside = isDeadOutsideLoop(*I, L);
+
+            //----------------------------------------------------
+            // CONDIZIONE 3
+            // Dominanza su tutti gli usi nel loop
+            //----------------------------------------------------
+
+            bool dominatesUses = true;
+
+            for (User *U : I->users()) {
+
+                // user() implementa la catena DEF-USE
+                // (dalla definizione agli usi)
+
+                if (Instruction *UseInst = dyn_cast<Instruction>(U)) {
+
+                    // Consideriamo solo usi interni al loop
+                    if (L->contains(UseInst)) {
+
+                        // I deve dominare il suo uso
+                        if (!DT.dominates(I, UseInst)) {
+                            dominatesUses = false;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            //----------------------------------------------------
+            // Se soddisfa le condizioni → candidata
+            //----------------------------------------------------
+
+            if ((dominatesExits || deadOutside) &&
+                dominatesUses) {
+
+                errs() << "Candidate for hoisting: ";
+                I->print(errs());
+                errs() << "\n";
+
+                HoistCandidates.push_back(I);
             }
         }
 
+        //--------------------------------------------------------
+        // FASE 3
+        // CODE MOTION
+        //--------------------------------------------------------
+
+        // Vettore temporaneo che conterrà
+        // le istruzioni nell'ordine DFS corretto
+
+        std::vector<Instruction*> OrderedHoist;
+
+        // DFS del CFG del loop
+        // Utile per rispettare dipendenze tra invariant
+
+        for (BasicBlock *BB : depth_first(L->getHeader())) {
+
+            // Consideriamo solo blocchi del loop
+            if (!L->contains(BB))
+                continue;
+
+            // Scorriamo le istruzioni del blocco
+            for (Instruction &I : *BB) {
+
+                // Verifica se è candidata all'hoisting
+                if (std::find(HoistCandidates.begin(),
+                              HoistCandidates.end(),
+                              &I) != HoistCandidates.end()) {
+                    
+                    // Salva nel vettore temporaneo
+                    OrderedHoist.push_back(&I);
+                }
+            }
+        }
+
+        //--------------------------------------------------------
+        // CODE MOTION
+        //--------------------------------------------------------
+
+        for (Instruction *I : OrderedHoist) {
+
+            errs() << "Hoisting instruction: ";
+            I->print(errs());
+            errs() << "\n";
+
+            // Sposta l'istruzione nel preheader
+            // prima del terminatore.
+            I->moveBefore(Preheader->getTerminator());
+        }
+
+
+        // Ricorsione sui sotto-loop (analizza eventuali sotto-loop)
+        for (Loop *SubLoop : L->getSubLoops()) {
+            processLoop(SubLoop, DT, LI);
+        }
     }
 
     // Funzione che verifica se una istruzione è loop-invariant
@@ -209,6 +358,25 @@ struct LoopInvariantCodeMotion: PassInfoMixin<LoopInvariantCodeMotion>{
         }
 
         // Tutti gli operandi soddisfano le condizioni → invariant
+        return true;
+    }
+
+    // Verifica se il valore definito è dead fuori dal loop
+    bool isDeadOutsideLoop(Instruction &I, Loop *L) {
+
+        // Scorriamo tutti gli usi del valore definito da I
+        for (User *U : I.users()) {
+
+            if (Instruction *UseInst = dyn_cast<Instruction>(U)) {
+
+                // Se troviamo un uso fuori dal loop
+                // allora NON è dead.
+
+                if (!L->contains(UseInst))
+                    return false;
+            }
+        }
+
         return true;
     }
 
