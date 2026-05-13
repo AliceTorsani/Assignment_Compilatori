@@ -167,7 +167,7 @@ struct LoopInvariantCodeMotion: PassInfoMixin<LoopInvariantCodeMotion>{
                     outs() << "\n\t\t\t ";
 
 
-                    if(dB == eB) { isEbInChild=true; }
+                    if(dB == eB) { isEbInChild=true; break;}
                 }
                 if(!isEbInChild) { dominatesExits = false; } //TODO: break?
             }
@@ -259,8 +259,34 @@ struct LoopInvariantCodeMotion: PassInfoMixin<LoopInvariantCodeMotion>{
                               HoistCandidates.end(),
                               &I) != HoistCandidates.end()) {
                     
-                    // Salva nel vettore temporaneo
-                    OrderedHoist.push_back(&I);
+                    // Si verifica che tutte le istruzioni invarianti da cui l'istruzione I dipende
+                    // sono state spostate (salvate in OrderedHoist)
+                    bool allGood = true;
+
+                    // Prende gli operandi dell'istruzione
+                    for(Value *Op : I.operands()) {
+                        
+                        // Se il valore dell'operando è definito da un'altra istruzione
+                        // risaliamo alla definizione di essa
+                        if (Instruction *OpInst = dyn_cast<Instruction>(Op)) {
+                            
+                            // Verifica se è già stata inserita tra le istruzioni da spostare
+                            // Se non si trova l'istruzione allora non è da inserire in OrderdHoist
+                            if (std::find(OrderedHoist.begin(), OrderedHoist.end(), OpInst) == OrderedHoist.end()) {
+                                outs() << "istruzione rimossa in fase finale: ";
+                                I.printAsOperand(outs());
+                                outs() << "\n-------\n";
+                                allGood = false;
+                            }
+                        }
+                    }
+                    
+                    // Se  tutte le istruzioni invarianti da cui l'istruzione I dipende
+                    // sono state spostate si sposta anch'essa
+                    if(allGood) {
+                        // Salva nel vettore temporaneo le istruzioni da spostare
+                        OrderedHoist.push_back(&I);
+                    }
                 }
             }
         }
