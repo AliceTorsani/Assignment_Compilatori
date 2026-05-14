@@ -1,5 +1,5 @@
 CMakeFiles/LoopInvariantCodeMotion.dir/LoopInvariantCodeMotion.cpp.o: \
-  /home/alice/Scrivania/Laboratori_Compilatori/TerzoAssignment/LICM/src/LoopInvariantCodeMotion.cpp \
+  /home/alice/Scrivania/Assignment_Compilatori/TerzoAssignment/LICM/src/LoopInvariantCodeMotion.cpp \
   /home/alice/Scrivania/LLVM-19.1.7-Linux-X64/include/llvm/IR/LegacyPassManager.h \
   /home/alice/Scrivania/LLVM-19.1.7-Linux-X64/include/llvm/Support/CBindingWrapping.h \
   /home/alice/Scrivania/LLVM-19.1.7-Linux-X64/include/llvm-c/Types.h \

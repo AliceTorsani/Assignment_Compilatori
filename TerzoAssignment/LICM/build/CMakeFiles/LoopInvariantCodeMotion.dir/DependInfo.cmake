@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/home/alice/Scrivania/Laboratori_Compilatori/TerzoAssignment/LICM/src/LoopInvariantCodeMotion.cpp" "CMakeFiles/LoopInvariantCodeMotion.dir/LoopInvariantCodeMotion.cpp.o" "gcc" "CMakeFiles/LoopInvariantCodeMotion.dir/LoopInvariantCodeMotion.cpp.o.d"
+  "/home/alice/Scrivania/Assignment_Compilatori/TerzoAssignment/LICM/src/LoopInvariantCodeMotion.cpp" "CMakeFiles/LoopInvariantCodeMotion.dir/LoopInvariantCodeMotion.cpp.o" "gcc" "CMakeFiles/LoopInvariantCodeMotion.dir/LoopInvariantCodeMotion.cpp.o.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

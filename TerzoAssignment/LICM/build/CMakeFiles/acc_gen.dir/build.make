@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/alice/Scrivania/Laboratori_Compilatori/TerzoAssignment/LICM/src
+CMAKE_SOURCE_DIR = /home/alice/Scrivania/Assignment_Compilatori/TerzoAssignment/LICM/src
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/alice/Scrivania/Laboratori_Compilatori/TerzoAssignment/LICM/build
+CMAKE_BINARY_DIR = /home/alice/Scrivania/Assignment_Compilatori/TerzoAssignment/LICM/build
 
 # Utility rule file for acc_gen.
 
@@ -81,6 +81,6 @@ CMakeFiles/acc_gen.dir/clean:
 .PHONY : CMakeFiles/acc_gen.dir/clean
 
 CMakeFiles/acc_gen.dir/depend:
-	cd /home/alice/Scrivania/Laboratori_Compilatori/TerzoAssignment/LICM/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/alice/Scrivania/Laboratori_Compilatori/TerzoAssignment/LICM/src /home/alice/Scrivania/Laboratori_Compilatori/TerzoAssignment/LICM/src /home/alice/Scrivania/Laboratori_Compilatori/TerzoAssignment/LICM/build /home/alice/Scrivania/Laboratori_Compilatori/TerzoAssignment/LICM/build /home/alice/Scrivania/Laboratori_Compilatori/TerzoAssignment/LICM/build/CMakeFiles/acc_gen.dir/DependInfo.cmake "--color=$(COLOR)"
+	cd /home/alice/Scrivania/Assignment_Compilatori/TerzoAssignment/LICM/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/alice/Scrivania/Assignment_Compilatori/TerzoAssignment/LICM/src /home/alice/Scrivania/Assignment_Compilatori/TerzoAssignment/LICM/src /home/alice/Scrivania/Assignment_Compilatori/TerzoAssignment/LICM/build /home/alice/Scrivania/Assignment_Compilatori/TerzoAssignment/LICM/build /home/alice/Scrivania/Assignment_Compilatori/TerzoAssignment/LICM/build/CMakeFiles/acc_gen.dir/DependInfo.cmake "--color=$(COLOR)"
 .PHONY : CMakeFiles/acc_gen.dir/depend
 

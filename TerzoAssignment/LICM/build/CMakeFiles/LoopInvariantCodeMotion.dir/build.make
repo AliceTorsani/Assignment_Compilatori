@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/alice/Scrivania/Laboratori_Compilatori/TerzoAssignment/LICM/src
+CMAKE_SOURCE_DIR = /home/alice/Scrivania/Assignment_Compilatori/TerzoAssignment/LICM/src
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/alice/Scrivania/Laboratori_Compilatori/TerzoAssignment/LICM/build
+CMAKE_BINARY_DIR = /home/alice/Scrivania/Assignment_Compilatori/TerzoAssignment/LICM/build
 
 # Include any dependencies generated for this target.
 include CMakeFiles/LoopInvariantCodeMotion.dir/depend.make
@@ -73,18 +73,18 @@ CMakeFiles/LoopInvariantCodeMotion.dir/codegen:
 .PHONY : CMakeFiles/LoopInvariantCodeMotion.dir/codegen
 
 CMakeFiles/LoopInvariantCodeMotion.dir/LoopInvariantCodeMotion.cpp.o: CMakeFiles/LoopInvariantCodeMotion.dir/flags.make
-CMakeFiles/LoopInvariantCodeMotion.dir/LoopInvariantCodeMotion.cpp.o: /home/alice/Scrivania/Laboratori_Compilatori/TerzoAssignment/LICM/src/LoopInvariantCodeMotion.cpp
+CMakeFiles/LoopInvariantCodeMotion.dir/LoopInvariantCodeMotion.cpp.o: /home/alice/Scrivania/Assignment_Compilatori/TerzoAssignment/LICM/src/LoopInvariantCodeMotion.cpp
 CMakeFiles/LoopInvariantCodeMotion.dir/LoopInvariantCodeMotion.cpp.o: CMakeFiles/LoopInvariantCodeMotion.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/alice/Scrivania/Laboratori_Compilatori/TerzoAssignment/LICM/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/LoopInvariantCodeMotion.dir/LoopInvariantCodeMotion.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/LoopInvariantCodeMotion.dir/LoopInvariantCodeMotion.cpp.o -MF CMakeFiles/LoopInvariantCodeMotion.dir/LoopInvariantCodeMotion.cpp.o.d -o CMakeFiles/LoopInvariantCodeMotion.dir/LoopInvariantCodeMotion.cpp.o -c /home/alice/Scrivania/Laboratori_Compilatori/TerzoAssignment/LICM/src/LoopInvariantCodeMotion.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/alice/Scrivania/Assignment_Compilatori/TerzoAssignment/LICM/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/LoopInvariantCodeMotion.dir/LoopInvariantCodeMotion.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/LoopInvariantCodeMotion.dir/LoopInvariantCodeMotion.cpp.o -MF CMakeFiles/LoopInvariantCodeMotion.dir/LoopInvariantCodeMotion.cpp.o.d -o CMakeFiles/LoopInvariantCodeMotion.dir/LoopInvariantCodeMotion.cpp.o -c /home/alice/Scrivania/Assignment_Compilatori/TerzoAssignment/LICM/src/LoopInvariantCodeMotion.cpp
 
 CMakeFiles/LoopInvariantCodeMotion.dir/LoopInvariantCodeMotion.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/LoopInvariantCodeMotion.dir/LoopInvariantCodeMotion.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/alice/Scrivania/Laboratori_Compilatori/TerzoAssignment/LICM/src/LoopInvariantCodeMotion.cpp > CMakeFiles/LoopInvariantCodeMotion.dir/LoopInvariantCodeMotion.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/alice/Scrivania/Assignment_Compilatori/TerzoAssignment/LICM/src/LoopInvariantCodeMotion.cpp > CMakeFiles/LoopInvariantCodeMotion.dir/LoopInvariantCodeMotion.cpp.i
 
 CMakeFiles/LoopInvariantCodeMotion.dir/LoopInvariantCodeMotion.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/LoopInvariantCodeMotion.dir/LoopInvariantCodeMotion.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/alice/Scrivania/Laboratori_Compilatori/TerzoAssignment/LICM/src/LoopInvariantCodeMotion.cpp -o CMakeFiles/LoopInvariantCodeMotion.dir/LoopInvariantCodeMotion.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/alice/Scrivania/Assignment_Compilatori/TerzoAssignment/LICM/src/LoopInvariantCodeMotion.cpp -o CMakeFiles/LoopInvariantCodeMotion.dir/LoopInvariantCodeMotion.cpp.s
 
 # Object files for target LoopInvariantCodeMotion
 LoopInvariantCodeMotion_OBJECTS = \
@@ -96,7 +96,7 @@ LoopInvariantCodeMotion_EXTERNAL_OBJECTS =
 libLoopInvariantCodeMotion.so: CMakeFiles/LoopInvariantCodeMotion.dir/LoopInvariantCodeMotion.cpp.o
 libLoopInvariantCodeMotion.so: CMakeFiles/LoopInvariantCodeMotion.dir/build.make
 libLoopInvariantCodeMotion.so: CMakeFiles/LoopInvariantCodeMotion.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/alice/Scrivania/Laboratori_Compilatori/TerzoAssignment/LICM/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX shared library libLoopInvariantCodeMotion.so"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/alice/Scrivania/Assignment_Compilatori/TerzoAssignment/LICM/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX shared library libLoopInvariantCodeMotion.so"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/LoopInvariantCodeMotion.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -108,6 +108,6 @@ CMakeFiles/LoopInvariantCodeMotion.dir/clean:
 .PHONY : CMakeFiles/LoopInvariantCodeMotion.dir/clean
 
 CMakeFiles/LoopInvariantCodeMotion.dir/depend:
-	cd /home/alice/Scrivania/Laboratori_Compilatori/TerzoAssignment/LICM/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/alice/Scrivania/Laboratori_Compilatori/TerzoAssignment/LICM/src /home/alice/Scrivania/Laboratori_Compilatori/TerzoAssignment/LICM/src /home/alice/Scrivania/Laboratori_Compilatori/TerzoAssignment/LICM/build /home/alice/Scrivania/Laboratori_Compilatori/TerzoAssignment/LICM/build /home/alice/Scrivania/Laboratori_Compilatori/TerzoAssignment/LICM/build/CMakeFiles/LoopInvariantCodeMotion.dir/DependInfo.cmake "--color=$(COLOR)"
+	cd /home/alice/Scrivania/Assignment_Compilatori/TerzoAssignment/LICM/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/alice/Scrivania/Assignment_Compilatori/TerzoAssignment/LICM/src /home/alice/Scrivania/Assignment_Compilatori/TerzoAssignment/LICM/src /home/alice/Scrivania/Assignment_Compilatori/TerzoAssignment/LICM/build /home/alice/Scrivania/Assignment_Compilatori/TerzoAssignment/LICM/build /home/alice/Scrivania/Assignment_Compilatori/TerzoAssignment/LICM/build/CMakeFiles/LoopInvariantCodeMotion.dir/DependInfo.cmake "--color=$(COLOR)"
 .PHONY : CMakeFiles/LoopInvariantCodeMotion.dir/depend
 
