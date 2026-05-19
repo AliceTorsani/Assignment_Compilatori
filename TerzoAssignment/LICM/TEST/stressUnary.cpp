@@ -108,6 +108,8 @@ int icmTest(int alias) {
         int w = y + d;        
     }
 
+    int q = a + 18;
+
     return 0;
 }
 
