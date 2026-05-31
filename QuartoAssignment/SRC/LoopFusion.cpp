@@ -13,7 +13,7 @@
 using namespace llvm;
 
 //TODO controllare che ci sia un solo exit block
-//TODO controllare quando prende viene controllato il preheader
+//TODO controllare quando viene controllato il preheader
 
 namespace {
 
@@ -52,28 +52,27 @@ struct LoopFusion: PassInfoMixin<LoopFusion> {
     //
     //========================================================
     void processLoopSiblings(ArrayRef<Loop *> Loops) {
-        outs() << "number of loops in the function: " << Loops.size() << "\n";
+        if (verbose) outs() << "number of loops in the function: " << Loops.size() << "\n";
 
         // Controlla coppie consecutive di siblings
         for (unsigned i = Loops.size()-1; i > 0; --i) {
-        //  for (unsigned i = 0; i + 1 < Loops.size(); ++i) {
-            outs() << "indexes: " << i << ", " << i-1 << "\n";
+            if (verbose) outs() << "indexes: " << i << ", " << i-1 << "\n";
 
             Loop *L0 = Loops[i];
             Loop *L1 = Loops[i - 1];
 
-            errs() << "Checking adjacency between:\n";
-            errs() << "  L0 header: ";
-                   L0->getHeader()->printAsOperand(outs(), false);
-                   errs() << "\n";
-            errs() << "  L1 header: ";
-                   L1->getHeader()->printAsOperand(outs(), false);
-                   errs() << "\n";
-
             if(verbose) {
+                errs() << "Checking adjacency between:\n";
+                errs() << "  L0 header: ";
+                    L0->getHeader()->printAsOperand(outs(), false);
+                    errs() << "\n";
+                errs() << "  L1 header: ";
+                    L1->getHeader()->printAsOperand(outs(), false);
+                    errs() << "\n";
+
                 errs() << "\tl'exiting block di L0: ";
-                L0->getExitingBlock()->printAsOperand(outs(), false);
-                errs() << "\n";
+                    L0->getExitingBlock()->printAsOperand(outs(), false);
+                    errs() << "\n";
             }
 
             if (areAdjacent(L0, L1)) {
