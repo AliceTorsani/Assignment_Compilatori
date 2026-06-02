@@ -9,6 +9,8 @@
 #include "llvm/IR/CFG.h"
 #include "llvm/IR/Function.h"
 #include "llvm/IR/Instructions.h"
+#include "llvm/Analysis/ScalarEvolution.h"
+
 
 using namespace llvm;
 
@@ -23,23 +25,24 @@ struct LoopFusion: PassInfoMixin<LoopFusion> {
   // Entry point del Function Pass
   PreservedAnalyses run(Function &F, FunctionAnalysisManager &AM) {
 
-    outs() << "Running LoopFusionPass on function: "
-               << F.getName() << "\n";
+    outs() << "\n------------------------\nRunning LoopFusionPass on function: "
+               << F.getName() << "\n--------------\n";
 
         // Recupera la loop tree della funzione
         LoopInfo &LI = AM.getResult<LoopAnalysis>(F);
+        ScalarEvolution &SE = AM.getResult<ScalarEvolutionAnalysis>(F);
 
         // Inizia dai top-level loops
         std::vector<Loop*> topLevelLoops = LI.getTopLevelLoops();
         if(topLevelLoops.size() > 0)
-            processLoopSiblings(topLevelLoops);
+            processLoopSiblings(topLevelLoops, SE);
 
 
     return PreservedAnalyses::all();
   }
 
   private:
-    bool verbose = true;
+    bool verbose = false;
 
     //========================================================
     // Visita ricorsiva dei siblings
@@ -48,15 +51,16 @@ struct LoopFusion: PassInfoMixin<LoopFusion> {
     // Questa funzione:
     //
     // 1. controlla i loop consecutivi allo stesso livello
-    // 2. visita ricorsivamente i subloops
+    // 2. calcola i trip count per ogni coppia
+    // 3. visita ricorsivamente i subloops
     //
     //========================================================
-    void processLoopSiblings(ArrayRef<Loop *> Loops) {
-        if (verbose) outs() << "number of loops in the function: " << Loops.size() << "\n";
+    void processLoopSiblings(ArrayRef<Loop *> Loops, ScalarEvolution &SE) {
+        // if (verbose) outs() << "number of loops in the function: " << Loops.size() << "\n";
 
         // Controlla coppie consecutive di siblings
         for (unsigned i = Loops.size()-1; i > 0; --i) {
-            if (verbose) outs() << "indexes: " << i << ", " << i-1 << "\n";
+            // if (1) outs() << "indexes: " << i << ", " << i-1 << "\n";
 
             Loop *L0 = Loops[i];
             Loop *L1 = Loops[i - 1];
@@ -83,12 +87,35 @@ struct LoopFusion: PassInfoMixin<LoopFusion> {
 
                 errs() << "  --> NOT adjacent\n";
             }
+            
+
+            // CALCOLO DEL TRIP COUNT DEI LOOP
+            bool sameTripCount = false;
+            unsigned int tripCountL0 = SE.getSmallConstantTripCount(L0);
+            unsigned int tripCountL1 = SE.getSmallConstantTripCount(L1);
+            
+            if(true) { //TODO sostituire con verbose
+                outs() << "n iterazioni primo loop: " << tripCountL0 << "\n";
+                outs() << "n iterazioni secondo loop: " << tripCountL1 << "\n";
+                outs() << "TRIPCOUNT: ";
+            }
+            
+
+
+            if (tripCountL0 < 2 || tripCountL1 < 2) {
+                outs() << "i loop vengono eseguiti troppe poche volte o un numero sconosciuto per poter essere fusi\n";
+            } else if (tripCountL0 != tripCountL1){
+                outs() << "numero di esecuzioni differente\n";
+            } else {
+                outs() << "i loop vengono eseguiti lo stesso numero di volte" << "\n";
+                sameTripCount = true;
+            }
         }
 
         // Ricorsione sui subloops
         for (Loop *L : Loops) {
             if(L->getSubLoops().size() != 0)
-                processLoopSiblings(L->getSubLoops());
+                processLoopSiblings(L->getSubLoops(), SE);
         }
     }
 
@@ -107,6 +134,10 @@ struct LoopFusion: PassInfoMixin<LoopFusion> {
         if (!L0 || !L1)
             return false;
 
+        if(verbose) {
+            outs() << "Il loop L0 è guarded? " << L0->isGuarded() << "\n";
+            outs() << "Il loop L1 è guarded? " << L1->isGuarded() << "\n";
+        }
         //----------------------------------------------------
         // CASO 1: loop guarded
         //----------------------------------------------------
