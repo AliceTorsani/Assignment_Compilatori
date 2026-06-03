@@ -11,6 +11,10 @@
 #include "llvm/IR/Instructions.h"
 #include "llvm/Analysis/ScalarEvolution.h"
 
+#include "llvm/Transforms/Utils/LoopSimplify.h"
+
+#include <algorithm>
+
 
 using namespace llvm;
 
@@ -34,7 +38,10 @@ struct LoopFusion: PassInfoMixin<LoopFusion> {
 
         // Inizia dai top-level loops
         std::vector<Loop*> topLevelLoops = LI.getTopLevelLoops();
+        //TODO : inverti topLevel Loops
+        
         if(topLevelLoops.size() > 0)
+            std::reverse(topLevelLoops.begin(), topLevelLoops.end());
             processLoopSiblings(topLevelLoops, SE);
 
 
@@ -42,7 +49,7 @@ struct LoopFusion: PassInfoMixin<LoopFusion> {
   }
 
   private:
-    bool verbose = false;
+    bool verbose = true;
 
     //========================================================
     // Visita ricorsiva dei siblings
@@ -59,11 +66,11 @@ struct LoopFusion: PassInfoMixin<LoopFusion> {
         // if (verbose) outs() << "number of loops in the function: " << Loops.size() << "\n";
 
         // Controlla coppie consecutive di siblings
-        for (unsigned i = Loops.size()-1; i > 0; --i) {
+        for (unsigned i = 0; i+1 < Loops.size(); ++i) {
             // if (1) outs() << "indexes: " << i << ", " << i-1 << "\n";
 
             Loop *L0 = Loops[i];
-            Loop *L1 = Loops[i - 1];
+            Loop *L1 = Loops[i + 1];
 
             if(verbose) {
                 errs() << "Checking adjacency between:\n";
@@ -93,6 +100,10 @@ struct LoopFusion: PassInfoMixin<LoopFusion> {
             bool sameTripCount = false;
             unsigned int tripCountL0 = SE.getSmallConstantTripCount(L0);
             unsigned int tripCountL1 = SE.getSmallConstantTripCount(L1);
+            //A better measure is the backedge-taken count, which is the number of times any of the backedges is taken before the loop. It is one less than the trip count for executions that enter the header.
+            // unsigned int tripCountL0 = SE.getBackedgeTakenCount(L0);
+            // unsigned int tripCountL0 = SE.getBackedgeTakenCount(L0);
+            
             
             if(true) { //TODO sostituire con verbose
                 outs() << "n iterazioni primo loop: " << tripCountL0 << "\n";
@@ -137,6 +148,7 @@ struct LoopFusion: PassInfoMixin<LoopFusion> {
         if(verbose) {
             outs() << "Il loop L0 è guarded? " << L0->isGuarded() << "\n";
             outs() << "Il loop L1 è guarded? " << L1->isGuarded() << "\n";
+            
         }
         //----------------------------------------------------
         // CASO 1: loop guarded
