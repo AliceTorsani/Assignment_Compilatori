@@ -20,7 +20,6 @@ using namespace llvm;
 
 //TODO controllare che ci sia un solo exit block
 //TODO controllare quando viene controllato il preheader
-//TODO iterare a convergenza
 
 namespace {
 
@@ -70,11 +69,14 @@ struct LoopFusion: PassInfoMixin<LoopFusion> {
     void processLoopSiblings(ArrayRef<Loop *> Loops, ScalarEvolution &SE) {
         // if (verbose) outs() << "number of loops in the function: " << Loops.size() << "\n";
 
+        // Vengono tenuti gli indici dei loop che sono stati fusi, durante l'iterazione si controlla che l'indice che si sta per scegliere sia differente da uno in questa lista
+
         // Controlla coppie consecutive di siblings
         for (unsigned i = 0; i+1 < Loops.size(); ++i) {
             // if (1) outs() << "indexes: " << i << ", " << i-1 << "\n";
 
             Loop *L0 = Loops[i];
+
             Loop *L1 = Loops[i + 1];
 
             if(verbose) {
@@ -103,25 +105,16 @@ struct LoopFusion: PassInfoMixin<LoopFusion> {
 
             // CALCOLO DEL TRIP COUNT DEI LOOP
             bool sameTripCount = false;
-            unsigned int tripCountL0 = SE.getSmallConstantTripCount(L0);
-            unsigned int tripCountL1 = SE.getSmallConstantTripCount(L1);
             //A better measure is the backedge-taken count, which is the number of times any of the backedges is taken before the loop. It is one less than the trip count for executions that enter the header.
-            // unsigned int tripCountL0 = SE.getBackedgeTakenCount(L0);
-            // unsigned int tripCountL0 = SE.getBackedgeTakenCount(L0);
+            const SCEV* tripCountL0 = SE.getBackedgeTakenCount(L0);
+            const SCEV* tripCountL1 = SE.getBackedgeTakenCount(L1);
             
             
-            if(verbose) { //TODO sostituire con verbose
-                outs() << "\n---CONTROLLO TRIP COUNT---\n";
-                outs() << "\tn iterazioni primo loop: " << tripCountL0 << "\n";
-                outs() << "\tn iterazioni secondo loop: " << tripCountL1 << "\n";
-                outs() << "\tTRIPCOUNT: ";
-            }
             
-
-
-            if (tripCountL0 < 2 || tripCountL1 < 2) {
-                outs() << "i loop vengono eseguiti troppe poche volte o un numero sconosciuto per poter essere fusi\n";
-            } else if (tripCountL0 != tripCountL1){
+            
+            if(verbose) {outs() << "\n---CONTROLLO TRIP COUNT---\n";}
+            
+            if (tripCountL0 != tripCountL1){
                 outs() << "numero di esecuzioni differente\n";
             } else {
                 outs() << "i loop vengono eseguiti lo stesso numero di volte" << "\n";
@@ -441,7 +434,7 @@ struct LoopFusion: PassInfoMixin<LoopFusion> {
                         return true;
                     }
                 }
-                //operando complementare all'altro (>= e <=) TODO: fix this check
+                //operando complementare all'altro (>= e <=)
                 if(CondInst0->getPredicate() == CondInst1->getSwappedPredicate()) {
                     
                     //registri apeculari -> sono equivalenti
@@ -476,7 +469,7 @@ llvm::PassPluginLibraryInfo getLoopFusionPluginInfo() {
             PB.registerPipelineParsingCallback(
                 [](StringRef Name, FunctionPassManager &FPM,
                    ArrayRef<PassBuilder::PipelineElement>) {
-                  if (Name == "loop-u-fusion") {
+                  if (Name == "my-loop-fusion") {
                     FPM.addPass(LoopFusion());
                     return true;
                   }
