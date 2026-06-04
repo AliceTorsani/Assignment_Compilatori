@@ -56,3 +56,21 @@ void test4_to_7(int r) {
     //trip count differente
 }
 //VFVF
+
+
+
+void nest_order(int r) {
+    for(int i=0; i<5; i++) {
+        for(int j=0; j<5; j++) {
+            for (int k = 0; k < 8; k++)
+            {
+                r++;
+            }
+
+            for (int k = 0; k < 8; k++)
+            {
+                r++;
+            }
+        }
+    }
+}

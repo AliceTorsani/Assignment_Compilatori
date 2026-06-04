@@ -20,10 +20,16 @@ using namespace llvm;
 
 //TODO controllare che ci sia un solo exit block
 //TODO controllare quando viene controllato il preheader
+//TODO iterare a convergenza
 
 namespace {
 
 // New PM implementation
+// Prima di eseguite il passo, eseguire nella cartella /test:
+// opt -passes="loop-simplify,loop-rotate" Test.m2r.ll -S -o Test.simplified.ll
+// Dopodichè eseguire il passo 
+// Invocare il passo nella cartella /test nel seguente modo:
+// opt -S -load-pass-plugin ../build/libLoopFusion.so -p my-loop-fusion Test.simplified.ll -o Test.optimized.ll 
 struct LoopFusion: PassInfoMixin<LoopFusion> {
 
   // Entry point del Function Pass
@@ -38,7 +44,6 @@ struct LoopFusion: PassInfoMixin<LoopFusion> {
 
         // Inizia dai top-level loops
         std::vector<Loop*> topLevelLoops = LI.getTopLevelLoops();
-        //TODO : inverti topLevel Loops
         
         if(topLevelLoops.size() > 0)
             std::reverse(topLevelLoops.begin(), topLevelLoops.end());
@@ -105,10 +110,11 @@ struct LoopFusion: PassInfoMixin<LoopFusion> {
             // unsigned int tripCountL0 = SE.getBackedgeTakenCount(L0);
             
             
-            if(true) { //TODO sostituire con verbose
-                outs() << "n iterazioni primo loop: " << tripCountL0 << "\n";
-                outs() << "n iterazioni secondo loop: " << tripCountL1 << "\n";
-                outs() << "TRIPCOUNT: ";
+            if(verbose) { //TODO sostituire con verbose
+                outs() << "\n---CONTROLLO TRIP COUNT---\n";
+                outs() << "\tn iterazioni primo loop: " << tripCountL0 << "\n";
+                outs() << "\tn iterazioni secondo loop: " << tripCountL1 << "\n";
+                outs() << "\tTRIPCOUNT: ";
             }
             
 
@@ -164,13 +170,15 @@ struct LoopFusion: PassInfoMixin<LoopFusion> {
         //----------------------------------------------------
         if (L0->isGuarded() && L1->isGuarded()) {
 
+            errs() << "caso 1: i due loop sono guarded\n";
             //----------------------------------------------------
             // I due loop devono avere
             // la stessa guardia
             //----------------------------------------------------
 
             if (!haveSameGuard(L0, L1)){
-                errs() << "I due loop non hanno la stessa guardia\n";
+                
+                errs() << "I due loop non hanno la stessa guardia:\n\t";
                 return false;
             }
 
@@ -236,8 +244,9 @@ struct LoopFusion: PassInfoMixin<LoopFusion> {
         //----------------------------------------------------
         if(!L0->isGuarded() && !L1->isGuarded()){
 
+            errs() <<"caso 2: i due loop non sono guarded\n";
 
-            BasicBlock* ExitBlock = L0->getExitBlock();
+            BasicBlock *ExitBlock = L0->getExitBlock();
             if (verbose) {
                 outs() << "\texit block LO: ";
                 ExitBlock->printAsOperand(outs(), false);
@@ -374,7 +383,8 @@ struct LoopFusion: PassInfoMixin<LoopFusion> {
     //
     //========================================================
     bool haveSameGuard(Loop *L0, Loop *L1) {
-
+        if(verbose) outs() << "\n---CONTROLLO GUARDIE---\n";
+        
         // Entrambi devono essere guarded
         if (!L0->isGuarded() || !L1->isGuarded())
             return false;
@@ -407,9 +417,44 @@ struct LoopFusion: PassInfoMixin<LoopFusion> {
 
         Value *Cond0 = GuardBI0->getCondition();
         Value *Cond1 = GuardBI1->getCondition();
+        
+        if(verbose) { outs() << "\tcondizione 1: "; Cond0->print(outs()); 
+                outs() << "\n\tcondizione 2: "; Cond1->print(outs()); outs() << "\n";}
+            
+        //----------------------------------------------------
+        // Caso 3:
+        // condition equivalenti
+        //----------------------------------------------------
+        //cast a istruzione delle condizioni
+        if(ICmpInst* CondInst0 = dyn_cast<ICmpInst>(Cond0)) {
+            if(ICmpInst* CondInst1 = dyn_cast<ICmpInst>(Cond1)) {
 
-        if (Cond0 == Cond1)
-            return true;
+                // stesso operando
+                if(CondInst0->getPredicate() == CondInst1->getPredicate()) {
+                    
+                    //stessi registri -> sono equivalenti
+                    if((CondInst0->getOperand(0) == CondInst1->getOperand(0)) &&
+                    (CondInst0->getOperand(1) == CondInst1->getOperand(1))) {
+                        
+                        if(verbose){outs() << "corrispondono\n";}
+                        
+                        return true;
+                    }
+                }
+                //operando complementare all'altro (>= e <=) TODO: fix this check
+                if(CondInst0->getPredicate() == CondInst1->getSwappedPredicate()) {
+                    
+                    //registri apeculari -> sono equivalenti
+                    if((CondInst0->getOperand(0) == CondInst1->getOperand(1)) &&
+                    (CondInst0->getOperand(1) == CondInst1->getOperand(0))) {
+                        
+                        if(verbose){outs() << "sono equivalenti\n";}
+                        
+                        return true;
+                    }
+                }
+            }
+        }
 
         //----------------------------------------------------
         // Guardie differenti
