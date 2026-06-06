@@ -193,6 +193,108 @@ void sameTC_equalIn2(int *A, int*B, int q, int z) {
 }
 
 
+//====================================================
+// CASE 11
+// VALORE PER RIFERIMENTO
+// i != 0
+// T.C. DIFFERENTE
+//====================================================
+void sameTC_differentStart(int *A, int*B, int q, int z) {
+    q = 15;
+    z = 15;
+        
+    for(int i=7; i<q; i++) {
+        A[i] +=1;
+    }
+    for(int i=0; i<z; i++) {
+        B[i] -=1;
+    }
+}
+
+
+
+//====================================================
+// CASE 12
+// i aggiornato in maniera differente
+// 
+// T.C. DIFFERENTE
+//====================================================
+void sameTC_differentUpdate(int *A, int*B, int q, int z) {
+    q = 15;
+    z = 15;
+        
+    for(int i=0; i<q; i++) {
+        A[i] +=1;
+    }
+    for(int i=0; i<z; i++) {
+        i++;
+        B[i] -=1;
+    }
+}
+
+
+//====================================================
+// CASE 13
+// i inverso rispetto al primo
+// 
+// T.C. UGUALE
+//====================================================
+void sameTC_differentTripDirection(int *A, int*B, int q, int z) {
+    q = 15;
+    z = 15;
+        
+    for(int i=0; i<q; i++) {
+        A[i] +=1;
+    }
+    for(int i=z; i>0; i--) {
+        B[i] -=1;
+    }
+}
+
+
+//====================================================
+// CASE 14
+// FOR E DO-WHILE   
+//
+// T.C. UGUALE
+//====================================================
+void sameTC_doWAndFor(int *A, int*B, int q, int z) {
+    q = 15;
+    z = 15;
+        
+    for(int i=0; i<q; i++) {
+        A[i] +=1;
+    }
+    int j=0;
+    if(z > 0) {
+        do {
+            B[j] -=1;
+            j++;
+        } while(j < z);
+    }
+}
+
+
+//====================================================
+// CASE 15
+// infinito
+// 
+// T.C. UGUALE
+//====================================================
+void sameTC_infinite(int *A, int*B, int q, int z) {
+    q = 15;
+    z = 15;
+        
+    while(true) {
+        A[0] +=1;
+    }
+    while(true) {
+        B[0] -=1;
+    }
+}
+
+
+
 
 
 int main() {
