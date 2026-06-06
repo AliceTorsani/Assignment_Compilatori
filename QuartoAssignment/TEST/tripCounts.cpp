@@ -177,9 +177,8 @@ void sameTC_assignedEqual(int *A, int*B, int q, int z) {
 // doppia guardia di uguaglianza
 // T.C. UGUALE
 //====================================================
-void sameTC_equalIn2(int *A, int*B, int q, int z) {
-    if(q<=z) {
-        if(q>=z) {
+void sameTC_equalWithEsle(int *A, int*B, int q, int z) {
+    if(q==z) {
    
             for(int i=0; i<q; i++) {
                 A[i] +=1;
@@ -188,8 +187,11 @@ void sameTC_equalIn2(int *A, int*B, int q, int z) {
                 B[i] -=1;
             }
             
-        }
+    } else  {
+        z -=2;
     }
+
+    z += 2;
 }
 
 
@@ -259,10 +261,9 @@ void sameTC_differentTripDirection(int *A, int*B, int q, int z) {
 // T.C. UGUALE
 //====================================================
 void sameTC_doWAndFor(int *A, int*B, int q, int z) {
-    q = 15;
     z = 15;
         
-    for(int i=0; i<q; i++) {
+    for(int i=0; i<z; i++) {
         A[i] +=1;
     }
     int j=0;
@@ -302,19 +303,6 @@ int main() {
     int A[N];
     int B[N];
     int C[N];
-
-    sameTC(A,B);
-    sameTC_ref(A,B, 12);
-    sameTC_ref_diff(A,B, 12);
-    sameTC_static(A,B);
-    sameTC_static_diff(A,B);
-    sameTC_equal(A,B, 12, 15);
-    sameTC_equal(A,B, 12, 12);
-    sameTC_modified(A,B, 12, 15);
-    sameTC_assigned(A,B, 12, 15);
-    sameTC_assignedEqual(A,B, 10, 10);
-    sameTC_equalIn2(A,B, 14, 16);
-
 
     return 0;
 }

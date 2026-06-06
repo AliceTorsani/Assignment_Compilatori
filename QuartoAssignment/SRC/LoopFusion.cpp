@@ -11,6 +11,8 @@
 #include "llvm/IR/Instructions.h"
 #include "llvm/Analysis/ScalarEvolution.h"
 
+#include "llvm/IR/Dominators.h"
+
 #include "llvm/Transforms/Utils/LoopSimplify.h"
 
 #include <algorithm>
@@ -33,6 +35,52 @@ struct LoopFusion: PassInfoMixin<LoopFusion> {
 
   // Entry point del Function Pass
   PreservedAnalyses run(Function &F, FunctionAnalysisManager &AM) {
+    
+    
+    DominatorTree &DT = AM.getResult<DominatorTreeAnalysis>(F);
+
+    // itero su ogni istruzione
+    for (auto BBIter = F.begin(); BBIter != F.end(); ++BBIter) {
+        BasicBlock &B = *BBIter;
+        for (auto InstIter = B.begin(); InstIter != B.end(); ++InstIter) {
+            Instruction &I = *InstIter;
+
+            //ricerco delle uguaglianze
+            if (ICmpInst* CondInst = dyn_cast<ICmpInst>(&I)) {
+                if (CondInst->getPredicate() == CmpInst::Predicate::ICMP_EQ) {
+                    outs() << "quick copy propagation: \n";
+                    CondInst->print(outs(), false);
+                    outs() << "<- questa istruzione è un'uguaglianza\n";
+
+                    //prendo gli usi in di 1 all'interno dell'IF e li sostituisco con 0
+                    SmallVector<BasicBlock*> dominatedByThisCondition;
+                    DT.getDescendants(&B, dominatedByThisCondition);
+                    
+                    //per ogni istruzione nei blocchi dominati dall'IF
+                    for(auto dbt : dominatedByThisCondition) {
+                        for( Instruction &dInst : *dbt) {        
+
+                            //Controllo se è tra gli user dell'operando
+                            for( User *opUse : CondInst->getOperand(1)->users()) {
+                                if(Instruction *UserInst = dyn_cast<Instruction>(opUse)) {
+                                    if (&dInst == UserInst && &dInst != CondInst) {
+
+                                        //E nel caso sotituisco i suoi usi di op1 con op0 (relativi all'if)
+                                        outs() << "l'istruzione passa da : ";
+                                        dInst.print(outs(), false);
+                                        dInst.replaceUsesOfWith(CondInst->getOperand(1), CondInst->getOperand(0));
+                                        outs() << "\na : ";
+                                        dInst.print(outs(), false);
+                                        outs() << "\n";
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+    }}
+
 
     outs() << "\n------------------------\nRunning LoopFusionPass on function: "
                << F.getName() << "\n--------------\n";
@@ -106,19 +154,21 @@ struct LoopFusion: PassInfoMixin<LoopFusion> {
             // CALCOLO DEL TRIP COUNT DEI LOOP
             bool sameTripCount = false;
             //A better measure is the backedge-taken count, which is the number of times any of the backedges is taken before the loop. It is one less than the trip count for executions that enter the header.
-            const SCEV* tripCountL0 = SE.getBackedgeTakenCount(L0);
-            const SCEV* tripCountL1 = SE.getBackedgeTakenCount(L1);
-            
-            
-            
-            
-            if(verbose) {outs() << "\n---CONTROLLO TRIP COUNT---\n";}
-            
-            if (tripCountL0 != tripCountL1){
-                outs() << "numero di esecuzioni differente\n";
-            } else {
-                outs() << "i loop vengono eseguiti lo stesso numero di volte" << "\n";
-                sameTripCount = true;
+            if(SE.hasLoopInvariantBackedgeTakenCount(L0) && SE.hasLoopInvariantBackedgeTakenCount(L1)) {
+                const SCEV* tripCountL0 = SE.getBackedgeTakenCount(L0);
+                const SCEV* tripCountL1 = SE.getBackedgeTakenCount(L1);
+                
+                
+                
+                
+                if(verbose) {outs() << "\n---CONTROLLO TRIP COUNT---\n";}
+                
+                if (tripCountL0 != tripCountL1){
+                    outs() << "numero di esecuzioni differente\n";
+                } else {
+                    outs() << "i loop vengono eseguiti lo stesso numero di volte" << "\n";
+                    sameTripCount = true;
+                }
             }
         }
 
