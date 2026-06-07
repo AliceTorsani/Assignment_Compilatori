@@ -42,36 +42,42 @@ struct LoopFusion: PassInfoMixin<LoopFusion> {
     // itero su ogni istruzione
     for (auto BBIter = F.begin(); BBIter != F.end(); ++BBIter) {
         BasicBlock &B = *BBIter;
+        ICmpInst* CondInst;
         for (auto InstIter = B.begin(); InstIter != B.end(); ++InstIter) {
             Instruction &I = *InstIter;
+            
+            // cerco delle branch
+            if(BranchInst *branch = dyn_cast<BranchInst>(&I)) {
+                // se sono condizionali e al momento ho una Condizione di uguaglianza salvata
+                if (CondInst != nullptr && branch->isConditional()) {
 
-            //ricerco delle uguaglianze
-            if (ICmpInst* CondInst = dyn_cast<ICmpInst>(&I)) {
-                if (CondInst->getPredicate() == CmpInst::Predicate::ICMP_EQ) {
-                    outs() << "quick copy propagation: \n";
-                    CondInst->print(outs(), false);
-                    outs() << "<- questa istruzione è un'uguaglianza\n";
+                    // e la condizione del branch è quelle che ho salvato
+                    if(branch->getCondition() == CondInst){
+                        outs() << "trovata l'istruzione di branch relativa all'uguaglianza: ";
+                        branch->print(outs(), false);
+                        outs() << "\n";
 
-                    //prendo gli usi in di 1 all'interno dell'IF e li sostituisco con 0
-                    SmallVector<BasicBlock*> dominatedByThisCondition;
-                    DT.getDescendants(&B, dominatedByThisCondition);
-                    
-                    //per ogni istruzione nei blocchi dominati dall'IF
-                    for(auto dbt : dominatedByThisCondition) {
-                        for( Instruction &dInst : *dbt) {        
+                        //prendo gli usi di var1 all'interno dell'IF e li sostituisco con var0
+                        SmallVector<BasicBlock*> dominatedByThisCondition;
+                        DT.getDescendants(branch->getSuccessor(0), dominatedByThisCondition);
+                        
+                        //per ogni istruzione nei blocchi dominati dall'IF
+                        for(auto dbt : dominatedByThisCondition) {
+                            for( Instruction &dInst : *dbt) {
 
-                            //Controllo se è tra gli user dell'operando
-                            for( User *opUse : CondInst->getOperand(1)->users()) {
-                                if(Instruction *UserInst = dyn_cast<Instruction>(opUse)) {
-                                    if (&dInst == UserInst && &dInst != CondInst) {
+                                //Controllo se è tra gli user dell'operando
+                                for( User *opUse : CondInst->getOperand(1)->users()) {
+                                    if(Instruction *UserInst = dyn_cast<Instruction>(opUse)) {
+                                        if (&dInst == UserInst && &dInst != CondInst) {
 
-                                        //E nel caso sotituisco i suoi usi di op1 con op0 (relativi all'if)
-                                        outs() << "l'istruzione passa da : ";
-                                        dInst.print(outs(), false);
-                                        dInst.replaceUsesOfWith(CondInst->getOperand(1), CondInst->getOperand(0));
-                                        outs() << "\na : ";
-                                        dInst.print(outs(), false);
-                                        outs() << "\n";
+                                            //E nel caso sotituisco i suoi usi di op1 con op0 (relativi all'if)
+                                            outs() << "l'istruzione passa da : ";
+                                            dInst.print(outs(), false);
+                                            dInst.replaceUsesOfWith(CondInst->getOperand(1), CondInst->getOperand(0));
+                                            outs() << "\na : ";
+                                            dInst.print(outs(), false);
+                                            outs() << "\n";
+                                        }
                                     }
                                 }
                             }
@@ -79,7 +85,23 @@ struct LoopFusion: PassInfoMixin<LoopFusion> {
                     }
                 }
             }
-    }}
+
+
+            //ricerco delle IF
+            if (isa<ICmpInst>(&I)) {
+                CondInst = dyn_cast<ICmpInst>(&I);
+
+                // e controllo che siano uguaglianze
+                if (CondInst->getPredicate() == CmpInst::Predicate::ICMP_EQ) {
+                    outs() << "\n-quick copy propagation: \n";
+                    CondInst->print(outs(), false);
+                    outs() << "<- questa istruzione è un'uguaglianza\n";
+                } else {
+                    CondInst = nullptr;
+                }
+            }
+        }
+    }
 
 
     outs() << "\n------------------------\nRunning LoopFusionPass on function: "

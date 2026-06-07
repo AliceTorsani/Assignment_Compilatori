@@ -104,8 +104,9 @@ void sameTC_equal(int *A, int*B, int q, int z) {
         for(int i=0; i<z; i++) {
             B[i] -=1;
         }
-
     }
+
+    z+=2;
 }
 
 
@@ -174,18 +175,18 @@ void sameTC_assignedEqual(int *A, int*B, int q, int z) {
 //====================================================
 // CASE 10
 // VALORE PER RIFERIMENTO
-// doppia guardia di uguaglianza
-// T.C. UGUALE
+// guardia di uguaglianza e cambio di valore
+// T.C. DIFFERENTE
 //====================================================
-void sameTC_equalWithEsle(int *A, int*B, int q, int z) {
+void sameTC_differentWithEsle(int *A, int*B, int q, int z) {
     if(q==z) {
-   
-            for(int i=0; i<q; i++) {
-                A[i] +=1;
-            }
-            for(int i=0; i<z; i++) {
-                B[i] -=1;
-            }
+        for(int i=0; i<q; i++) {
+            A[i] +=1;
+            z++;
+        }
+        for(int i=0; i<z; i++) {
+            B[i] -=1;
+        }
             
     } else  {
         z -=2;
@@ -197,6 +198,29 @@ void sameTC_equalWithEsle(int *A, int*B, int q, int z) {
 
 //====================================================
 // CASE 11
+// VALORE PER RIFERIMENTO
+// guardia di uguaglianza
+// T.C. UGUALE
+//====================================================
+void sameTC_equalWithEsle(int *A, int*B, int q, int z) {
+    if(q==z) {
+        for(int i=0; i<q; i++) {
+            A[i] +=1;
+        }
+        for(int i=0; i<z; i++) {
+            B[i] -=1;
+        }
+            
+    } else  {
+        z -=2;
+    }
+
+    z += 2;
+}
+
+
+//====================================================
+// CASE 12
 // VALORE PER RIFERIMENTO
 // i != 0
 // T.C. DIFFERENTE
@@ -216,7 +240,7 @@ void sameTC_differentStart(int *A, int*B, int q, int z) {
 
 
 //====================================================
-// CASE 12
+// CASE 13
 // i aggiornato in maniera differente
 // 
 // T.C. DIFFERENTE
@@ -236,7 +260,7 @@ void sameTC_differentUpdate(int *A, int*B, int q, int z) {
 
 
 //====================================================
-// CASE 13
+// CASE 14
 // i inverso rispetto al primo
 // 
 // T.C. UGUALE
@@ -255,7 +279,7 @@ void sameTC_differentTripDirection(int *A, int*B, int q, int z) {
 
 
 //====================================================
-// CASE 14
+// CASE 15
 // FOR E DO-WHILE   
 //
 // T.C. UGUALE
@@ -277,7 +301,7 @@ void sameTC_doWAndFor(int *A, int*B, int q, int z) {
 
 
 //====================================================
-// CASE 15
+// CASE 16
 // infinito
 // 
 // T.C. UGUALE
@@ -295,6 +319,45 @@ void sameTC_infinite(int *A, int*B, int q, int z) {
 }
 
 
+//====================================================
+// CASE 17
+// VALORE COSTANTE
+// guardia di uguaglianza
+// T.C. UGUALE
+//====================================================
+const int Q = 15;
+const int Z = 15;
+void sameTC_equalWithConst(int *A, int*B) {
+    if(Q==Z) {
+        for(int i=0; i<Q; i++) {
+            A[i] +=1;
+        }
+        for(int i=0; i<Z; i++) {
+            B[i] -=1;
+        }
+            
+    }
+}
+
+
+//====================================================
+// CASE 18
+// VALORE COSTANTE
+// guardia di uguaglianza
+// T.C. UGUALE
+//====================================================
+
+void sameTC_equalWithConstAndInverseDir(int *A, int*B) {
+    if(Q==Z) {
+        for(int i=0; i<Q; i++) {
+            A[i] +=1;
+        }
+        for(int i=Z; i>0; i--) {
+            B[i] -=1;
+        }
+            
+    }
+}
 
 
 
