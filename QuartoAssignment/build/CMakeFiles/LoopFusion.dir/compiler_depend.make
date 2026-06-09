@@ -60,6 +60,7 @@ CMakeFiles/LoopFusion.dir/LoopFusion.cpp.o: /home/alice/Scrivania/Assignment_Com
   /home/alice/Scrivania/LLVM-19.1.7-Linux-X64/include/llvm/ADT/iterator_range.h \
   /home/alice/Scrivania/LLVM-19.1.7-Linux-X64/include/llvm/ADT/simple_ilist.h \
   /home/alice/Scrivania/LLVM-19.1.7-Linux-X64/include/llvm/Analysis/CGSCCPassManager.h \
+  /home/alice/Scrivania/LLVM-19.1.7-Linux-X64/include/llvm/Analysis/DependenceAnalysis.h \
   /home/alice/Scrivania/LLVM-19.1.7-Linux-X64/include/llvm/Analysis/IVDescriptors.h \
   /home/alice/Scrivania/LLVM-19.1.7-Linux-X64/include/llvm/Analysis/InlineAdvisor.h \
   /home/alice/Scrivania/LLVM-19.1.7-Linux-X64/include/llvm/Analysis/InlineCost.h \
@@ -635,8 +636,6 @@ CMakeFiles/LoopFusion.dir/LoopFusion.cpp.o: /home/alice/Scrivania/Assignment_Com
 
 /usr/include/c++/14/bits/refwrap.h:
 
-/usr/include/c++/14/bits/predefined_ops.h:
-
 /usr/include/c++/14/bits/nested_exception.h:
 
 /usr/include/c++/14/bits/move.h:
@@ -1047,14 +1046,6 @@ CMakeFiles/LoopFusion.dir/LoopFusion.cpp.o: /home/alice/Scrivania/Assignment_Com
 
 /home/alice/Scrivania/LLVM-19.1.7-Linux-X64/include/llvm/Analysis/LoopAccessAnalysis.h:
 
-/home/alice/Scrivania/LLVM-19.1.7-Linux-X64/include/llvm/IR/GlobalVariable.h:
-
-/usr/lib/llvm-20/lib/clang/20/include/__stddef_header_macro.h:
-
-/home/alice/Scrivania/LLVM-19.1.7-Linux-X64/include/llvm/IR/DbgVariableFragmentInfo.h:
-
-/home/alice/Scrivania/LLVM-19.1.7-Linux-X64/include/llvm/Support/CFGDiff.h:
-
 /usr/include/c++/14/cstddef:
 
 /home/alice/Scrivania/LLVM-19.1.7-Linux-X64/include/llvm/Analysis/LazyCallGraph.h:
@@ -1064,6 +1055,10 @@ CMakeFiles/LoopFusion.dir/LoopFusion.cpp.o: /home/alice/Scrivania/Assignment_Com
 /usr/include/sched.h:
 
 /home/alice/Scrivania/LLVM-19.1.7-Linux-X64/include/llvm/IR/PassManager.h:
+
+/usr/include/c++/14/bits/predefined_ops.h:
+
+/home/alice/Scrivania/LLVM-19.1.7-Linux-X64/include/llvm/Analysis/DependenceAnalysis.h:
 
 /home/alice/Scrivania/LLVM-19.1.7-Linux-X64/include/llvm/IR/Argument.h:
 
@@ -1197,6 +1192,10 @@ CMakeFiles/LoopFusion.dir/LoopFusion.cpp.o: /home/alice/Scrivania/Assignment_Com
 
 /home/alice/Scrivania/LLVM-19.1.7-Linux-X64/include/llvm/ADT/APInt.h:
 
+/usr/include/linux/posix_types.h:
+
+/home/alice/Scrivania/LLVM-19.1.7-Linux-X64/include/llvm/Support/GenericDomTree.h:
+
 /usr/lib/llvm-20/lib/clang/20/include/__stddef_offsetof.h:
 
 /home/alice/Scrivania/LLVM-19.1.7-Linux-X64/include/llvm/ADT/SmallBitVector.h:
@@ -1250,6 +1249,14 @@ CMakeFiles/LoopFusion.dir/LoopFusion.cpp.o: /home/alice/Scrivania/Assignment_Com
 /home/alice/Scrivania/LLVM-19.1.7-Linux-X64/include/llvm/IR/EHPersonalities.h:
 
 /home/alice/Scrivania/LLVM-19.1.7-Linux-X64/include/llvm/ADT/ilist_node_options.h:
+
+/home/alice/Scrivania/LLVM-19.1.7-Linux-X64/include/llvm/IR/GlobalVariable.h:
+
+/usr/lib/llvm-20/lib/clang/20/include/__stddef_header_macro.h:
+
+/home/alice/Scrivania/LLVM-19.1.7-Linux-X64/include/llvm/IR/DbgVariableFragmentInfo.h:
+
+/home/alice/Scrivania/LLVM-19.1.7-Linux-X64/include/llvm/Support/CFGDiff.h:
 
 /home/alice/Scrivania/LLVM-19.1.7-Linux-X64/include/llvm/IR/IRBuilder.h:
 
@@ -1558,7 +1565,3 @@ CMakeFiles/LoopFusion.dir/LoopFusion.cpp.o: /home/alice/Scrivania/Assignment_Com
 /usr/include/features.h:
 
 /usr/include/limits.h:
-
-/home/alice/Scrivania/LLVM-19.1.7-Linux-X64/include/llvm/Support/GenericDomTree.h:
-
-/usr/include/linux/posix_types.h:
