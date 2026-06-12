@@ -1,0 +1,9 @@
+/home/anna/QuartoAssignment/build/CMakeFiles/intrinsics_gen.dir
+/home/anna/QuartoAssignment/build/CMakeFiles/omp_gen.dir
+/home/anna/QuartoAssignment/build/CMakeFiles/acc_gen.dir
+/home/anna/QuartoAssignment/build/CMakeFiles/ARMTargetParserTableGen.dir
+/home/anna/QuartoAssignment/build/CMakeFiles/AArch64TargetParserTableGen.dir
+/home/anna/QuartoAssignment/build/CMakeFiles/RISCVTargetParserTableGen.dir
+/home/anna/QuartoAssignment/build/CMakeFiles/LoopFusion.dir
+/home/anna/QuartoAssignment/build/CMakeFiles/edit_cache.dir
+/home/anna/QuartoAssignment/build/CMakeFiles/rebuild_cache.dir
